@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "imports": ["../greengrass-ipc-model/main.smithy"],
+  "plugins": {
+    "event-stream-rpc-java": {
+      "serviceShapeId": "aws.greengrass#GreengrassCoreIPC",
+      "javaBasePackage": "software.amazon.awssdk",
+      "modelRelativePackage": "model",
+      "generateClientStubs": true,
+      "generateServerStubs": false
+    },
+    "event-stream-rpc-python": {
+      "serviceShapeId": "aws.greengrass#GreengrassCoreIPC",
+      "moduleOverrideDirectory": "awsiot",
+      "generateClientStubs": true
+    },
+    "event-stream-rpc-cpp": {
+      "serviceShapeId": "aws.greengrass#GreengrassCoreIPC",
+      "moduleOverrideDirectory": "greengrass_ipc",
+      "sourceSubdirectory": "source",
+      "includeSubdirectory": "include",
+      "generateClientStubs": true
+    },
+    "event-stream-rpc-javascript": {
+      "serviceShapeId": "aws.greengrass#GreengrassCoreIPC",
+      "moduleOverrideDirectory": "lib",
+      "generateClientStubs": true
+    }
+  }
+}

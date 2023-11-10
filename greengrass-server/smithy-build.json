@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "imports": ["../greengrass-ipc-model/main.smithy"],
+  "plugins": {
+    "event-stream-rpc-java": {
+      "serviceShapeId": "aws.greengrass#GreengrassCoreIPC",
+      "javaBasePackage": "software.amazon.awssdk",
+      "modelRelativePackage": "model",
+      "generateClientStubs": false,
+      "generateServerStubs": true
+    }
+  }
+}
