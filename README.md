@@ -5,7 +5,7 @@ Smithy code generators for IoT Devise SDKs that generate clients and server for 
 ## Build
 
 ```
-./gradlew clean install
+./gradlew clean build
 ```
 
 ## Deploying Local Uber JAR to GG Maven repo
