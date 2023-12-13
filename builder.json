@@ -1,5 +1,8 @@
 {
     "name": "smithy-iot-device-sdk-greengrass-ipc",
+    "packages": [
+        "maven"
+    ],
     "build_steps": [
         "./gradlew clean build"
     ]
