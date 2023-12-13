@@ -4,7 +4,6 @@ on:
   push:
     branches-ignore:
       - 'main'
-      - 'docs'
 
 env:
   BUILDER_VERSION: v0.9.53
@@ -21,12 +20,9 @@ jobs:
   linux-compat:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         image:
           - manylinux2014-x64
-    permissions:
-      id-token: write # This is required for requesting the JWT
     steps:
     - name: Checkout Sources
       uses: actions/checkout@v2
