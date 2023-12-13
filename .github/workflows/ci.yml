@@ -27,6 +27,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Build ${{ env.PACKAGE_NAME }}
       run: |
+        # TODO Configure credentials to be able to use newer versions of the builder.
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u awslabs --password-stdin
         export DOCKER_IMAGE=docker.pkg.github.com/awslabs/aws-crt-builder/aws-crt-${{ matrix.image }}:${{ env.BUILDER_VERSION }}
         docker pull $DOCKER_IMAGE
