@@ -15,6 +15,7 @@ env:
   HEAD_REF: ${{ github.head_ref }}
   RUN: ${{ github.run_id }}-${{ github.run_number }}
   AWS_DEFAULT_REGION: us-east-1
+  CI_IOT_CONTAINERS: arn:aws:iam::123124136734:role/CRT_IoT_Containers
 
 jobs:
   linux-compat:
@@ -31,6 +32,11 @@ jobs:
     permissions:
       id-token: write # This is required for requesting the JWT
     steps:
+    - name: configure AWS credentials (containers)
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ env.CI_IOT_CONTAINERS }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
     - name: Build ${{ env.PACKAGE_NAME }}
       run: |
         aws s3 cp s3://aws-crt-test-stuff/ci/${{ env.BUILDER_VERSION }}/linux-container-ci.sh ./linux-container-ci.sh && chmod a+x ./linux-container-ci.sh
