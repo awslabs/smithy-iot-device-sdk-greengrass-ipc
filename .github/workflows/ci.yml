@@ -25,13 +25,11 @@ jobs:
       matrix:
         image:
           - manylinux2014-x64
-          - al2-x64
-          - fedora-34-x64
-          - rhel8-x64
-          #- manylinux2014-x86 until we find 32-bit linux binaries we can use
     permissions:
       id-token: write # This is required for requesting the JWT
     steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v2
     - name: configure AWS credentials (containers)
       uses: aws-actions/configure-aws-credentials@v2
       with:
