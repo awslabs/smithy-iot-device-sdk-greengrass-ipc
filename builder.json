@@ -1,0 +1,6 @@
+{
+    "name": "aws-iot-device-sdk-greengrass-ipc",
+    "build_steps": [
+        "./gradlew clean build"
+    ]
+}
