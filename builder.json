@@ -9,7 +9,7 @@
     "targets": {
         "windows": {
             "!build_steps": [
-                ".\gradlew clean build"
+                ".\\gradlew.bat clean build"
             ]
         }
     }
