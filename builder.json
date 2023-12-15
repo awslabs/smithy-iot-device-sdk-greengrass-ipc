@@ -9,7 +9,7 @@
     "targets": {
         "windows": {
             "!build_steps": [
-                ".\\gradlew.bat --scan clean build"
+                ".\\gradlew.bat --stacktrace --scan --debug clean build"
             ]
         }
     }
