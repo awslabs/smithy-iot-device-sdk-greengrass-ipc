@@ -54,9 +54,3 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
-
-
-//do not copy below for public release - it is debug noise to generate classpath files for CLI unit testing
-tasks.withType<Test> {
-    this.classpath.forEach { println(it) }
-}
