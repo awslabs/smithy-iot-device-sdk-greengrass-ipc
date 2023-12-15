@@ -48,6 +48,7 @@ dependencies {
 
     implementation("software.amazon.awssdk.crt:aws-crt:0.16.14")
     implementation("com.google.code.gson:gson:2.8.6")
+    runtimeOnly("software.amazon.smithy:smithy-cli:1.42.0")
 }
 
 java {
