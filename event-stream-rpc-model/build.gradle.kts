@@ -27,13 +27,13 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
-    testImplementation("org.json:json:20200518")
-    implementation("com.google.code.gson:gson:2.8.6")
-    implementation("software.amazon.awssdk.crt:aws-crt:0.16.14")
+    testImplementation("org.json:json:20231013")
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
 
-    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.4.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
-    testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.4.0")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.8.1")
     testRuntimeOnly("org.slf4j:slf4j-jdk14:1.7.30")
 
     testImplementation(project(":test-model-codegen"))

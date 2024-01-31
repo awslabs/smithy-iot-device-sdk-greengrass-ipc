@@ -30,8 +30,8 @@ dependencies {
     implementation("org.jsoup:jsoup:1.13.1")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:[1.0.2,1.1.0[")
 
-    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.4.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
-    testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.4.0")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-params:5.8.1")
     testCompileOnly("org.hamcrest:hamcrest:2.1")
 }
