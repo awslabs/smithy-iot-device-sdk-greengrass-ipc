@@ -42,12 +42,12 @@ dependencies {
     implementation(project(":event-stream-rpc-client"))
     implementation(project(":event-stream-rpc-server"))
 
-    compileOnly("org.junit.jupiter:junit-jupiter-api:5.4.0")
-    compileOnly("org.junit.jupiter:junit-jupiter-params:5.4.0")
-    runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.0")
+    compileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    compileOnly("org.junit.jupiter:junit-jupiter-params:5.8.1")
+    runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 
-    implementation("software.amazon.awssdk.crt:aws-crt:0.16.14")
-    implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
 }
 
 java {

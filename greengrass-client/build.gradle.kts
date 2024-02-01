@@ -56,8 +56,8 @@ dependencies {
     implementation(project(":event-stream-rpc-model"))
     implementation(project(":event-stream-rpc-client"))
 
-    implementation("software.amazon.awssdk.crt:aws-crt:0.16.14")
-    implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
