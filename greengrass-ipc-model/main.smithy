@@ -1,6 +1,8 @@
 // The smithy IDL file describing the IPC APIs for Greengrass.
 // API design doc - https://quip-amazon.com/mbN5ATEk6Db6/IPC-SDK-API-Design
 
+$version: "2"
+
 namespace aws.greengrass
 
 /// Provides communication between Greengrass core and customer component
