@@ -1,5 +1,5 @@
 plugins {
-    id("software.amazon.smithy").version("0.5.0")
+    id("software.amazon.smithy").version("0.7.0")
 }
 
 repositories {
@@ -58,6 +58,8 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
+    implementation("software.amazon.smithy:smithy-model:1.44.0")
+    implementation("software.amazon.smithy:smithy-cli:1.44.0")
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
