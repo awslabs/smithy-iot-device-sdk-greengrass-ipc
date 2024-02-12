@@ -3,6 +3,9 @@
 
 $version: "2"
 
+$operationInputSuffix: "Request"
+$operationOutputSuffix: "Response"
+
 namespace aws.greengrass
 
 /// Provides communication between Greengrass core and customer component
@@ -50,8 +53,12 @@ service GreengrassCoreIPC {
 
 /// Update status of this component
 operation UpdateState {
-    input:  UpdateStateRequest,
-    output:  UpdateStateResponse,
+    input := {
+        /// The state to set this component to.
+        @required
+        state: ReportedLifecycleState
+    },
+    output := {},
     errors: [ServiceError, ResourceNotFoundError]
 }
 
@@ -373,12 +380,6 @@ structure AuthorizeClientDeviceActionResponse {
     /// Whether the client device is authorized to perform the operation on the resource.
     @required
     isAuthorized: Boolean
-}
-
-structure UpdateStateRequest {
-    /// The state to set this component to.
-    @required
-    state: ReportedLifecycleState
 }
 
 structure SubscribeToComponentUpdatesResponse {
@@ -1288,7 +1289,6 @@ structure InvalidClientDeviceAuthTokenError {
 // Empty structures follow
 structure SubscribeToValidateConfigurationUpdatesRequest {}
 structure SubscribeToComponentUpdatesRequest {}
-structure UpdateStateResponse {}
 structure DeferComponentUpdateResponse {}
 structure UpdateConfigurationResponse {}
 structure SendConfigurationValidityReportResponse {}
