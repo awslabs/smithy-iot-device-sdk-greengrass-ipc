@@ -25,10 +25,11 @@ tasks.withType<JavaCompile> {
 
 dependencies {
     implementation("org.freemarker:freemarker:2.3.30")
-    implementation("software.amazon.smithy:smithy-codegen-core:[1.0.2,1.1.0[")
+    implementation("software.amazon.smithy:smithy-codegen-core:1.44.0")
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:1.44.0")
+    implementation("software.amazon.smithy:smithy-cli:1.44.0")
     implementation("com.atlassian.commonmark:commonmark:0.14.0")
     implementation("org.jsoup:jsoup:1.13.1")
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:[1.0.2,1.1.0[")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")

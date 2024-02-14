@@ -10,7 +10,6 @@ include(":smithy-event-stream-rpc-python")
 include(":smithy-event-stream-rpc-cpp")
 include(":smithy-event-stream-rpc-javascript")
 
-//definitely include the following three in open source
 include(":event-stream-rpc-server")
 include(":event-stream-rpc-client")
 include(":event-stream-rpc-model")

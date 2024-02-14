@@ -4,7 +4,7 @@
  */
 
 plugins {
-    id("software.amazon.smithy").version("0.5.0")
+    id("software.amazon.smithy").version("0.7.0")
     `java-library`
     id("com.github.johnrengelman.shadow").version("6.1.0")
 }
