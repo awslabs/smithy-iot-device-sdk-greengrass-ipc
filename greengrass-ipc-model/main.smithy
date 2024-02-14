@@ -3,6 +3,7 @@
 
 $version: "2"
 
+// The suffixes for the generated names for input and output structures.
 $operationInputSuffix: "Request"
 $operationOutputSuffix: "Response"
 
@@ -64,37 +65,75 @@ operation UpdateState {
 
 /// Subscribe to receive notification if GGC is about to update any components
 operation SubscribeToComponentUpdates {
-    input: SubscribeToComponentUpdatesRequest,
-    output: SubscribeToComponentUpdatesResponse,
+    input := {},
+    output := {
+        messages: ComponentUpdatePolicyEvents
+    },
     errors: [ServiceError, ResourceNotFoundError]
 }
 
 /// Defer the update of components by a given amount of time and check again after that.
 operation DeferComponentUpdate {
-    input: DeferComponentUpdateRequest,
-    output: DeferComponentUpdateResponse,
+    input := {
+        /// The ID of the AWS IoT Greengrass deployment to defer.
+        @required
+        deploymentId: String,
+        /// (Optional) The name of the component for which to defer updates. Defaults to the name of the component that makes the request.
+        message: String,
+        /// The amount of time in milliseconds for which to defer the update. Greengrass waits for this amount of time and then sends another PreComponentUpdateEvent
+        recheckAfterMs: Long
+    },
+    output := {},
     errors: [ServiceError, ResourceNotFoundError, InvalidArgumentsError]
 }
 
 /// Get value of a given key from the configuration
 operation GetConfiguration {
-    input: GetConfigurationRequest,
-    output: GetConfigurationResponse,
+    input := {
+        /// (Optional) The name of the component. Defaults to the name of the component that makes the request.
+        componentName: String,
+        /// The key path to the configuration value. Specify a list where each entry is the key for a single level in the configuration object.
+        @required
+        keyPath: KeyPath
+    },
+    output := {
+        /// The name of the component.
+        componentName: String,
+        /// The requested configuration as an object.
+        value: Document
+    },
     errors: [ServiceError, ResourceNotFoundError]
 }
 
 /// Update this component's configuration by replacing the value of given keyName with the newValue.
 /// If an oldValue is specified then update will only take effect id the current value matches the given oldValue
 operation UpdateConfiguration {
-    input: UpdateConfigurationRequest,
-    output: UpdateConfigurationResponse,
+    input := {
+        /// (Optional) The key path to the container node (the object) to update. Specify a list where each entry is the key for a single level in the configuration object. Defaults to the root of the configuration object.
+        keyPath: KeyPath,
+        /// The current Unix epoch time in milliseconds. This operation uses this timestamp to resolve concurrent updates to the key. If the key in the component configuration has a greater timestamp than the timestamp in the request, then the request fails.
+        @required
+        timestamp: Timestamp,
+        /// The configuration object to merge at the location that you specify in keyPath.
+        @required
+        valueToMerge: Document
+    },
+    output := {},
     errors: [ServiceError, UnauthorizedError, ConflictError, FailedUpdateConditionCheckError, InvalidArgumentsError]
 }
 
 /// Subscribes to be notified when GGC updates the configuration for a given componentName and keyName.
 operation SubscribeToConfigurationUpdate {
-    input: SubscribeToConfigurationUpdateRequest,
-    output: SubscribeToConfigurationUpdateResponse,
+    input := {
+        /// (Optional) The name of the component. Defaults to the name of the component that makes the request.
+        componentName: String,
+        /// The key path to the configuration value for which to subscribe. Specify a list where each entry is the key for a single level in the configuration object.
+        @required
+        keyPath: KeyPath
+    },
+    output := {
+        messages: ConfigurationUpdateEvents
+    },
     errors: [ServiceError, ResourceNotFoundError]
 }
 
@@ -103,8 +142,10 @@ operation SubscribeToConfigurationUpdate {
 /// If the new configuration is not valid this component can use the SendConfigurationValidityReport
 /// operation to indicate that
 operation SubscribeToValidateConfigurationUpdates {
-    input: SubscribeToValidateConfigurationUpdatesRequest,
-    output: SubscribeToValidateConfigurationUpdatesResponse,
+    input := {},
+    output := {
+        messages: ValidateConfigurationUpdateEvents
+    },
     errors: [ServiceError]
 }
 
@@ -112,204 +153,450 @@ operation SubscribeToValidateConfigurationUpdates {
 /// subscription. It is not necessary to send the report if the configuration is valid (GGC will wait for timeout
 /// period and proceed). Sending the report with invalid config status will prevent GGC from applying the updates
 operation SendConfigurationValidityReport {
-    input: SendConfigurationValidityReportRequest,
-    output: SendConfigurationValidityReportResponse,
+    input := {
+        /// The report that tells Greengrass whether or not the configuration update is valid.
+        @required
+        configurationValidityReport: ConfigurationValidityReport
+    },
+    output := {},
     errors: [InvalidArgumentsError, ServiceError]
 }
 
 /// Creates a subscription for a custom topic
 operation SubscribeToTopic {
-    input:  SubscribeToTopicRequest,
-    output: SubscribeToTopicResponse,
+    input := {
+        /// The topic to subscribe to. Supports MQTT-style wildcards.
+        @required
+        topic: String,
+        /// (Optional) The behavior that specifies whether the component receives messages from itself.
+        receiveMode: ReceiveMode
+    },
+    output := {
+        @deprecated(message: "No longer used")
+        topicName: String,
+        messages: SubscriptionResponseMessage
+    },
     errors: [InvalidArgumentsError, ServiceError, UnauthorizedError]
 }
 
 /// Publish to a custom topic.
 operation PublishToTopic {
-    input: PublishToTopicRequest,
-    output: PublishToTopicResponse,
+    input := {
+        /// The topic to publish the message.
+        @required
+        topic: String,
+        /// The message to publish.
+        @required
+        publishMessage: PublishMessage
+    },
+    output := {},
     errors: [ServiceError, UnauthorizedError]
 }
 
 /// Gets the status and version of the component with the given component name
 operation GetComponentDetails {
-    input: GetComponentDetailsRequest,
-    output: GetComponentDetailsResponse,
+    input := {
+        /// The name of the component to get.
+        @required
+        componentName: String
+    },
+    output := {
+        /// The component's details.
+        @required
+        componentDetails: ComponentDetails
+    },
     errors: [ServiceError, ResourceNotFoundError, InvalidArgumentsError]
 }
 
 /// Restarts a component with the given name
 operation RestartComponent {
-    input: RestartComponentRequest,
-    output: RestartComponentResponse,
+    input := {
+        /// The name of the component.
+        @required
+        componentName: String
+    },
+    output := {
+        /// The status of the restart request.
+        @required
+        restartStatus: RequestStatus,
+        /// A message about why the component failed to restart, if the request failed.
+        message: String
+    },
     errors: [ServiceError, ComponentNotFoundError, InvalidArgumentsError]
 }
 
 /// Stops a component with the given name
 operation StopComponent {
-    input: StopComponentRequest,
-    output: StopComponentResponse,
+    input := {
+        /// The name of the component.
+        @required
+        componentName: String
+    },
+    output := {
+        /// The status of the stop request.
+        @required
+        stopStatus: RequestStatus,
+        /// A message about why the component failed to stop, if the request failed.
+        message: String
+    },
     errors: [ServiceError, ComponentNotFoundError, InvalidArgumentsError]
 }
 
 /// Creates a local deployment on the device.  Also allows to remove existing components.
 operation CreateLocalDeployment {
-    input: CreateLocalDeploymentRequest,
-    output: CreateLocalDeploymentResponse,
+    input := {
+        // None of the members are required by themselves but this structure cannot be empty
+
+        /// The thing group name the deployment is targeting. If the group name is not specified, "LOCAL_DEPLOYMENT" will be used.
+        groupName: String,
+        /// Map of component name to version. Components will be added to the group's existing root components.
+        rootComponentVersionsToAdd: ComponentToVersionMap,
+        /// List of components that need to be removed from the group, for example if new artifacts were loaded in this request but recipe version did not change.
+        rootComponentsToRemove: ComponentList,
+        /// Map of component names to configuration.
+        componentToConfiguration: ComponentToConfiguration,
+        /// Map of component names to component run as info.
+        componentToRunWithInfo: ComponentToRunWithInfo,
+        /// All recipes files in this directory will be copied over to the Greengrass package store.
+        recipeDirectoryPath: String,
+        /// All artifact files in this directory will be copied over to the Greengrass package store.
+        artifactsDirectoryPath: String,
+        /// Deployment failure handling policy.
+        failureHandlingPolicy: FailureHandlingPolicy
+    },
+    output := {
+        /// The ID of the local deployment that the request created.
+        deploymentId: String
+    },
     errors: [ServiceError, InvalidRecipeDirectoryPathError,
              InvalidArtifactsDirectoryPathError, InvalidArgumentsError]
 }
 
 /// Cancel a local deployment on the device.
 operation CancelLocalDeployment {
-    input: CancelLocalDeploymentRequest,
-    output: CancelLocalDeploymentResponse,
+    input := {
+        /// (Optional) The ID of the local deployment to cancel.
+        deploymentId: String
+    },
+    output := {
+        message: String
+    },
     errors: [ServiceError, ResourceNotFoundError, InvalidArgumentsError]
 }
 
 /// Get status of a local deployment with the given deploymentId
 operation GetLocalDeploymentStatus {
-    input: GetLocalDeploymentStatusRequest,
-    output: GetLocalDeploymentStatusResponse,
+    input := {
+        /// The ID of the local deployment to get.
+        @required
+        deploymentId: String
+    },
+    output := {
+        /// The local deployment.
+        @required
+        deployment: LocalDeployment
+    },
     errors: [ServiceError, ResourceNotFoundError]
 }
 
 /// Lists the last 5 local deployments along with their statuses
 operation ListLocalDeployments {
-    input: ListLocalDeploymentsRequest,
-    output: ListLocalDeploymentsResponse,
+    input := {},
+    output := {
+        /// The list of local deployments.
+        localDeployments: ListOfLocalDeployments
+    },
     errors: [ServiceError]
 }
 
 operation ListComponents {
-    input: ListComponentsRequest,
-    output: ListComponentsResponse,
+    input := {},
+    output := {
+        /// The list of components.
+        components: ListOfComponents
+    },
     errors: [ServiceError]
 }
 
 /// Publish an MQTT message to AWS IoT message broker
 operation PublishToIoTCore {
-    input: PublishToIoTCoreRequest,
-    output: PublishToIoTCoreResponse,
+    input := {
+        /// The topic to which to publish the message.
+        @required
+        topicName: String,
+        /// The MQTT QoS to use.
+        @required
+        qos: QOS,
+        /// (Optional) The message payload as a blob.
+        payload: Blob,
+        /// (Optional) Whether to set MQTT retain option to true when publishing.
+        retain: Boolean,
+        /// (Optional) MQTT user properties associated with the message.
+        userProperties: ListOfUserProperties,
+        /// (Optional) Message expiry interval in seconds.
+        messageExpiryIntervalSeconds: Long,
+        /// (Optional) Correlation data blob for request/response.
+        correlationData: Blob,
+        /// (Optional) Response topic for request/response.
+        responseTopic: String,
+        /// (Optional) Message payload format.
+        payloadFormat: PayloadFormat,
+        /// (Optional) Message content type.
+        contentType: String
+    },
+    output := {},
     errors: [ServiceError, UnauthorizedError]
 }
 
 /// Subscribe to a topic in AWS IoT message broker.
 operation SubscribeToIoTCore {
-    input: SubscribeToIoTCoreRequest,
-    output: SubscribeToIoTCoreResponse,
+    input := {
+        /// The topic to which to subscribe. Supports MQTT wildcards.
+        @required
+        topicName: String,
+        /// The MQTT QoS to use.
+        @required
+        qos: QOS,
+    },
+    output := {
+        messages: IoTCoreMessage
+    },
     errors: [ServiceError, UnauthorizedError]
 }
 
 // This API can be used only by stream manager, customer component calling this API will receive UnauthorizedError
 operation ValidateAuthorizationToken {
-    input: ValidateAuthorizationTokenRequest,
-    output: ValidateAuthorizationTokenResponse,
+    input := {
+        @required
+        token: String
+    },
+    output := {
+        @required
+        isValid: Boolean
+    },
     errors: [InvalidTokenError, UnauthorizedError, ServiceError]
 }
 
 // Retrieves a secret stored in AWS secrets manager
 operation GetSecretValue {
-    input: GetSecretValueRequest,
-    output: GetSecretValueResponse,
+    input := {
+        /// The name of the secret to get. You can specify either the Amazon Resource Name (ARN) or the friendly name of the secret.
+        @required
+        secretId: String,
+        /// (Optional) The ID of the version to get. If you don't specify versionId or versionStage, this operation defaults to the version with the AWSCURRENT label.
+        versionId: String,
+        /// (Optional) The staging label of the version to get. If you don't specify versionId or versionStage, this operation defaults to the version with the AWSCURRENT label.
+        versionStage: String
+    },
+    output := {
+        /// The ID of the secret.
+        @required
+        secretId: String,
+        /// The ID of this version of the secret.
+        @required
+        versionId: String,
+        /// The list of staging labels attached to this version of the secret.
+        @required
+        versionStage: SecretVersionList,
+        /// The value of this version of the secret.
+        @required
+        secretValue: SecretValue
+    },
     errors: [UnauthorizedError, ResourceNotFoundError, ServiceError]
 }
 
 // Generate a password for the HttpDebugView component
 operation CreateDebugPassword {
-    input: CreateDebugPasswordRequest,
-    output: CreateDebugPasswordResponse,
+    input := {},
+    output := {
+        @required
+        password: String,
+        @required
+        username: String,
+        @required
+        passwordExpiration: Timestamp,
+        certificateSHA256Hash: String,
+        certificateSHA1Hash: String,
+    },
     errors: [UnauthorizedError, ServiceError]
 }
 
 /// Retrieves a device shadow document stored by the local shadow service
 operation GetThingShadow {
-    input: GetThingShadowRequest,
-    output: GetThingShadowResponse,
+    input := {
+        /// The name of the thing.
+        @required
+        thingName: String,
+        /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
+        shadowName: String
+    },
+    output := {
+        /// The response state document as a JSON encoded blob.
+        @required
+        payload: Blob
+    },
     errors: [InvalidArgumentsError, ResourceNotFoundError, ServiceError, UnauthorizedError]
 }
 
 /// Updates a device shadow document stored in the local shadow service
 /// The update is an upsert operation, with optimistic locking support
 operation UpdateThingShadow {
-    input: UpdateThingShadowRequest,
-    output: UpdateThingShadowResponse,
+    input := {
+        /// The name of the thing.
+        @required
+        thingName: String,
+        /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
+        shadowName: String,
+        /// The request state document as a JSON encoded blob.
+        @required
+        payload: Blob
+    },
+    output := {
+        /// The response state document as a JSON encoded blob.
+        @required
+        payload: Blob
+    },
     errors: [InvalidArgumentsError, ConflictError, ServiceError, UnauthorizedError]
 }
 
 /// Deletes a device shadow document stored in the local shadow service
 operation DeleteThingShadow {
-    input: DeleteThingShadowRequest,
-    output: DeleteThingShadowResponse,
+    input := {
+        /// The name of the thing.
+        @required
+        thingName: String,
+        /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
+        shadowName: String
+    },
+    output := {
+        /// An empty response state document.
+        @required
+        payload: Blob
+    },
     errors: [InvalidArgumentsError, ResourceNotFoundError, ServiceError, UnauthorizedError]
 }
 
 /// Lists the named shadows for the specified thing
 operation ListNamedShadowsForThing {
-    input: ListNamedShadowsForThingRequest,
-    output: ListNamedShadowsForThingResponse,
+    input := {
+        /// The name of the thing.
+        @required
+        thingName: String,
+        /// (Optional) The token to retrieve the next set of results. This value is returned on paged results and is used in the call that returns the next page.
+        nextToken: String,
+        /// (Optional) The number of shadow names to return in each call. Value must be between 1 and 100. Default is 25.
+        @range(min: 1, max: 100)
+        pageSize: Integer
+    },
+    output := {
+        /// The list of shadow names.
+        @required
+        results: NamedShadowList,
+        /// (Optional) The date and time that the response was generated.
+        @required
+        timestamp: Timestamp,
+        /// (Optional) The token value to use in paged requests to retrieve the next page in the sequence. This token isn't present when there are no more shadow names to return.
+        nextToken: String
+    },
     errors: [InvalidArgumentsError, ResourceNotFoundError, ServiceError, UnauthorizedError]
 }
 
 // Pause a running component
 operation PauseComponent {
-    input:  PauseComponentRequest,
-    output:  PauseComponentResponse,
+    input := {
+        /// The name of the component to pause, which must be a generic component.
+        @required
+        componentName: String
+    },
+    output := {},
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
 // Resume a paused component
 operation ResumeComponent {
-    input:  ResumeComponentRequest,
-    output:  ResumeComponentResponse,
+    input := {
+        /// The name of the component to resume.
+        @required
+        componentName: String
+    },
+    output := {},
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
 operation SubscribeToCertificateUpdates {
-    input: SubscribeToCertificateUpdatesRequest,
-    output: SubscribeToCertificateUpdatesResponse,
+    input := {
+        @required
+        certificateOptions: CertificateOptions
+    },
+    output := {
+        messages: CertificateUpdateEvent
+    },
     errors: [ServiceError, UnauthorizedError, InvalidArgumentsError]
 }
 
 operation VerifyClientDeviceIdentity {
-    input: VerifyClientDeviceIdentityRequest,
-    output: VerifyClientDeviceIdentityResponse,
+    input := {
+        /// The client device's credentials.
+        @required
+        credential: ClientDeviceCredential
+    },
+    output := {
+        /// Whether the client device's identity is valid.
+        @required
+        isValidClientDevice: Boolean
+    },
     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError]
 }
 
- operation GetClientDeviceAuthToken {
-     input: GetClientDeviceAuthTokenRequest,
-     output: GetClientDeviceAuthTokenResponse,
-     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
- }
+operation GetClientDeviceAuthToken {
+    input := {
+        /// The client device's credentials.
+        @required
+        credential: CredentialDocument
+    },
+    output := @sensitive {
+        /// The session token for the client device. You can use this session token in subsequent requests to authorize this client device's actions.
+        @required
+        clientDeviceAuthToken: String
+    },
+    errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
+}
 
 operation AuthorizeClientDeviceAction {
-     input: AuthorizeClientDeviceActionRequest,
-     output: AuthorizeClientDeviceActionResponse,
-     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidClientDeviceAuthTokenError]
+    input := {
+        /// The session token for the client device from GetClientDeviceAuthToken.
+        @required
+        clientDeviceAuthToken: String,
+        /// The operation to authorize.
+        @required
+        operation: String,
+        /// The resource the client device performs the operation on.
+        @required
+        resource: String
+    },
+    output := {
+        /// Whether the client device is authorized to perform the operation on the resource.
+        @required
+        isAuthorized: Boolean
+    },
+    errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidClientDeviceAuthTokenError]
  }
 
 operation PutComponentMetric {
-    input: PutComponentMetricRequest,
-    output: PutComponentMetricResponse,
+    input := {
+        @required
+        metrics: MetricsList
+    },
+    output := {},
     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError]
 }
 
 //-----------Shapes------------------------
 
-structure SubscribeToCertificateUpdatesRequest {
-    @required
-    certificateOptions: CertificateOptions
-}
-
 structure CertificateOptions{
     /// The types of certificate updates to subscribe to.
     @required
     certificateType: CertificateType,
-}
-
-structure SubscribeToCertificateUpdatesResponse {
-    messages: CertificateUpdateEvent
 }
 
 @streaming
@@ -334,56 +621,20 @@ list CACertificates{
     member: String
 }
 
-structure GetClientDeviceAuthTokenRequest {
-    /// The client device's credentials.
-    @required
-    credential: CredentialDocument
- }
-
- union CredentialDocument {
-     /// The client device's MQTT credentials. Specify the client ID and certificate that the client device uses to connect.
-     mqttCredential: MQTTCredential
- }
-
- structure MQTTCredential {
-     /// The client ID to used to connect.
-     clientId: String,
-     /// The client certificate in pem format.
-     certificatePem: String,
-     /// The username. (unused).
-     username: String,
-     /// The password. (unused).
-     password: String
- }
-
- @sensitive
- structure GetClientDeviceAuthTokenResponse {
-    /// The session token for the client device. You can use this session token in subsequent requests to authorize this client device's actions.
-    @required
-    clientDeviceAuthToken: String
- }
-
-
-structure AuthorizeClientDeviceActionRequest {
-    /// The session token for the client device from GetClientDeviceAuthToken.
-    @required
-    clientDeviceAuthToken: String,
-    /// The operation to authorize.
-    @required
-    operation: String,
-    /// The resource the client device performs the operation on.
-    @required
-    resource: String
+union CredentialDocument {
+    /// The client device's MQTT credentials. Specify the client ID and certificate that the client device uses to connect.
+    mqttCredential: MQTTCredential
 }
 
-structure AuthorizeClientDeviceActionResponse {
-    /// Whether the client device is authorized to perform the operation on the resource.
-    @required
-    isAuthorized: Boolean
-}
-
-structure SubscribeToComponentUpdatesResponse {
-    messages: ComponentUpdatePolicyEvents
+structure MQTTCredential {
+    /// The client ID to used to connect.
+    clientId: String,
+    /// The client certificate in pem format.
+    certificatePem: String,
+    /// The username. (unused).
+    username: String,
+    /// The password. (unused).
+    password: String
 }
 
 @streaming
@@ -409,56 +660,8 @@ structure PostComponentUpdateEvent {
     deploymentId: String
 }
 
-structure DeferComponentUpdateRequest {
-    /// The ID of the AWS IoT Greengrass deployment to defer.
-    @required
-    deploymentId: String,
-    /// (Optional) The name of the component for which to defer updates. Defaults to the name of the component that makes the request.
-    message: String,
-    /// The amount of time in milliseconds for which to defer the update. Greengrass waits for this amount of time and then sends another PreComponentUpdateEvent
-    recheckAfterMs: Long
-}
-
 list KeyPath {
     member: String
-}
-
-structure GetConfigurationRequest {
-    /// (Optional) The name of the component. Defaults to the name of the component that makes the request.
-    componentName: String,
-    /// The key path to the configuration value. Specify a list where each entry is the key for a single level in the configuration object.
-    @required
-    keyPath: KeyPath
-}
-
-structure GetConfigurationResponse {
-    /// The name of the component.
-    componentName: String,
-    /// The requested configuration as an object.
-    value: Document
-}
-
-structure UpdateConfigurationRequest {
-    /// (Optional) The key path to the container node (the object) to update. Specify a list where each entry is the key for a single level in the configuration object. Defaults to the root of the configuration object.
-    keyPath: KeyPath,
-    /// The current Unix epoch time in milliseconds. This operation uses this timestamp to resolve concurrent updates to the key. If the key in the component configuration has a greater timestamp than the timestamp in the request, then the request fails.
-    @required
-    timestamp: Timestamp,
-    /// The configuration object to merge at the location that you specify in keyPath.
-    @required
-    valueToMerge: Document
-}
-
-structure SubscribeToConfigurationUpdateRequest {
-    /// (Optional) The name of the component. Defaults to the name of the component that makes the request.
-    componentName: String,
-    /// The key path to the configuration value for which to subscribe. Specify a list where each entry is the key for a single level in the configuration object.
-    @required
-    keyPath: KeyPath
-}
-
-structure SubscribeToConfigurationUpdateResponse {
-    messages: ConfigurationUpdateEvents
 }
 
 @streaming
@@ -474,10 +677,6 @@ structure ConfigurationUpdateEvent {
     /// The key path to the configuration value that updated.
     @required
     keyPath: KeyPath
-}
-
-structure SubscribeToValidateConfigurationUpdatesResponse {
-    messages: ValidateConfigurationUpdateEvents
 }
 
 @streaming
@@ -505,26 +704,6 @@ structure ConfigurationValidityReport {
     message: String
 }
 
-structure SendConfigurationValidityReportRequest {
-    /// The report that tells Greengrass whether or not the configuration update is valid.
-    @required
-    configurationValidityReport: ConfigurationValidityReport
-}
-
-structure SubscribeToTopicRequest {
-    /// The topic to subscribe to. Supports MQTT-style wildcards.
-    @required
-    topic: String,
-    /// (Optional) The behavior that specifies whether the component receives messages from itself.
-    receiveMode: ReceiveMode
-}
-
-structure SubscribeToTopicResponse {
-    @deprecated(message: "No longer used")
-    topicName: String,
-    messages: SubscriptionResponseMessage
-}
-
 @streaming
 union SubscriptionResponseMessage {
     /// (Optional) A JSON message.
@@ -532,17 +711,6 @@ union SubscriptionResponseMessage {
     /// (Optional) A binary message.
     binaryMessage: BinaryMessage
 }
-
-structure PublishToTopicRequest {
-    /// The topic to publish the message.
-    @required
-    topic: String,
-    /// The message to publish.
-    @required
-    publishMessage: PublishMessage
-}
-
-structure PublishToTopicResponse { }
 
 union PublishMessage {
     /// (Optional) A JSON message.
@@ -571,18 +739,6 @@ structure BinaryMessage {
     context: MessageContext
 }
 
-structure GetComponentDetailsRequest {
-    /// The name of the component to get.
-    @required
-    componentName: String
-}
-
-structure GetComponentDetailsResponse {
-    /// The component's details.
-    @required
-    componentDetails: ComponentDetails
-}
-
 structure ComponentDetails {
     /// The name of the component.
     @required
@@ -595,60 +751,6 @@ structure ComponentDetails {
     state: LifecycleState,
     /// The component's configuration as a JSON object.
     configuration: Document
-}
-
-structure RestartComponentRequest {
-    /// The name of the component.
-    @required
-    componentName: String
-}
-
-structure RestartComponentResponse {
-    /// The status of the restart request.
-    @required
-    restartStatus: RequestStatus,
-    /// A message about why the component failed to restart, if the request failed.
-    message: String
-}
-
-structure StopComponentRequest {
-    /// The name of the component.
-    @required
-    componentName: String
-}
-
-structure StopComponentResponse {
-    /// The status of the stop request.
-    @required
-    stopStatus: RequestStatus,
-    /// A message about why the component failed to stop, if the request failed.
-    message: String
-}
-
-structure CreateLocalDeploymentRequest {
-    // None of the members are required by themselves but this structure cannot be empty
-
-    /// The thing group name the deployment is targeting. If the group name is not specified, "LOCAL_DEPLOYMENT" will be used.
-    groupName: String,
-    /// Map of component name to version. Components will be added to the group's existing root components.
-    rootComponentVersionsToAdd: ComponentToVersionMap,
-    /// List of components that need to be removed from the group, for example if new artifacts were loaded in this request but recipe version did not change.
-    rootComponentsToRemove: ComponentList,
-    /// Map of component names to configuration.
-    componentToConfiguration: ComponentToConfiguration,
-    /// Map of component names to component run as info.
-    componentToRunWithInfo: ComponentToRunWithInfo,
-    /// All recipes files in this directory will be copied over to the Greengrass package store.
-    recipeDirectoryPath: String,
-    /// All artifact files in this directory will be copied over to the Greengrass package store.
-    artifactsDirectoryPath: String,
-    /// Deployment failure handling policy.
-    failureHandlingPolicy: FailureHandlingPolicy
-}
-
-structure CreateLocalDeploymentResponse {
-    /// The ID of the local deployment that the request created.
-    deploymentId: String
 }
 
 list ComponentList {
@@ -686,27 +788,6 @@ structure SystemResourceLimits {
     cpus: Double
 }
 
-structure CancelLocalDeploymentRequest {
-    /// (Optional) The ID of the local deployment to cancel.
-    deploymentId: String
-}
-
-structure CancelLocalDeploymentResponse {
-    message: String
-}
-
-structure GetLocalDeploymentStatusRequest {
-    /// The ID of the local deployment to get.
-    @required
-    deploymentId: String
-}
-
-structure GetLocalDeploymentStatusResponse {
-    /// The local deployment.
-    @required
-    deployment: LocalDeployment
-}
-
 structure LocalDeployment {
     /// The ID of the local deployment.
     @required
@@ -740,18 +821,8 @@ list DeploymentErrorTypes {
     member: String
 }
 
-structure ListLocalDeploymentsResponse {
-    /// The list of local deployments.
-    localDeployments: ListOfLocalDeployments
-}
-
 list ListOfLocalDeployments {
     member: LocalDeployment
-}
-
-structure ListComponentsResponse {
-    /// The list of components.
-    components: ListOfComponents
 }
 
 list ListOfComponents {
@@ -765,44 +836,6 @@ structure UserProperty {
 
 list ListOfUserProperties {
     member: UserProperty
-}
-
-structure PublishToIoTCoreRequest {
-    /// The topic to which to publish the message.
-    @required
-    topicName: String,
-    /// The MQTT QoS to use.
-    @required
-    qos: QOS,
-    /// (Optional) The message payload as a blob.
-    payload: Blob,
-    /// (Optional) Whether to set MQTT retain option to true when publishing.
-    retain: Boolean,
-    /// (Optional) MQTT user properties associated with the message.
-    userProperties: ListOfUserProperties,
-    /// (Optional) Message expiry interval in seconds.
-    messageExpiryIntervalSeconds: Long,
-    /// (Optional) Correlation data blob for request/response.
-    correlationData: Blob,
-    /// (Optional) Response topic for request/response.
-    responseTopic: String,
-    /// (Optional) Message payload format.
-    payloadFormat: PayloadFormat,
-    /// (Optional) Message content type.
-    contentType: String
-}
-
-structure SubscribeToIoTCoreRequest {
-    /// The topic to which to subscribe. Supports MQTT wildcards.
-    @required
-    topicName: String,
-    /// The MQTT QoS to use.
-    @required
-    qos: QOS,
-}
-
-structure SubscribeToIoTCoreResponse {
-    messages: IoTCoreMessage
 }
 
 @streaming
@@ -833,16 +866,6 @@ structure MQTTMessage {
     contentType: String
 }
 
-structure ValidateAuthorizationTokenRequest {
-    @required
-    token: String
-}
-
-structure ValidateAuthorizationTokenResponse {
-    @required
-    isValid: Boolean
-}
-
 @sensitive
 union SecretValue {
     /// The decrypted part of the protected secret information that you provided to Secrets Manager as a string.
@@ -855,148 +878,13 @@ list SecretVersionList {
     member: String
 }
 
-structure GetSecretValueRequest {
-    /// The name of the secret to get. You can specify either the Amazon Resource Name (ARN) or the friendly name of the secret.
-    @required
-    secretId: String,
-    /// (Optional) The ID of the version to get. If you don't specify versionId or versionStage, this operation defaults to the version with the AWSCURRENT label.
-    versionId: String,
-    /// (Optional) The staging label of the version to get. If you don't specify versionId or versionStage, this operation defaults to the version with the AWSCURRENT label.
-    versionStage: String
-}
-
-structure GetSecretValueResponse {
-    /// The ID of the secret.
-    @required
-    secretId: String,
-    /// The ID of this version of the secret.
-    @required
-    versionId: String,
-    /// The list of staging labels attached to this version of the secret.
-    @required
-    versionStage: SecretVersionList,
-    /// The value of this version of the secret.
-    @required
-    secretValue: SecretValue
-}
-
-structure CreateDebugPasswordRequest {
-}
-
-structure CreateDebugPasswordResponse {
-    @required
-    password: String,
-    @required
-    username: String,
-    @required
-    passwordExpiration: Timestamp,
-    certificateSHA256Hash: String,
-    certificateSHA1Hash: String,
-}
-
-structure GetThingShadowRequest {
-    /// The name of the thing.
-    @required
-    thingName: String,
-    /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
-    shadowName: String
-}
-
-structure GetThingShadowResponse {
-    /// The response state document as a JSON encoded blob.
-    @required
-    payload: Blob
-}
-
-structure UpdateThingShadowRequest {
-    /// The name of the thing.
-    @required
-    thingName: String,
-    /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
-    shadowName: String,
-    /// The request state document as a JSON encoded blob.
-    @required
-    payload: Blob
-}
-
-structure UpdateThingShadowResponse {
-    /// The response state document as a JSON encoded blob.
-    @required
-    payload: Blob
-}
-
-structure DeleteThingShadowRequest {
-    /// The name of the thing.
-    @required
-    thingName: String,
-    /// The name of the shadow. To specify the thing's classic shadow, set this parameter to an empty string ("").
-    shadowName: String
-}
-
-structure DeleteThingShadowResponse {
-    /// An empty response state document.
-    @required
-    payload: Blob
-}
-
 list NamedShadowList {
     member: String
-}
-
-structure ListNamedShadowsForThingRequest {
-    /// The name of the thing.
-    @required
-    thingName: String,
-    /// (Optional) The token to retrieve the next set of results. This value is returned on paged results and is used in the call that returns the next page.
-    nextToken: String,
-    /// (Optional) The number of shadow names to return in each call. Value must be between 1 and 100. Default is 25.
-    @range(min: 1, max: 100)
-    pageSize: Integer
-}
-
-structure ListNamedShadowsForThingResponse {
-    /// The list of shadow names.
-    @required
-    results: NamedShadowList,
-    /// (Optional) The date and time that the response was generated.
-    @required
-    timestamp: Timestamp,
-    /// (Optional) The token value to use in paged requests to retrieve the next page in the sequence. This token isn't present when there are no more shadow names to return.
-    nextToken: String
-}
-
-structure PauseComponentRequest {
-    /// The name of the component to pause, which must be a generic component.
-    @required
-    componentName: String
-}
-
-structure ResumeComponentRequest {
-    /// The name of the component to resume.
-    @required
-    componentName: String
-}
-
-structure VerifyClientDeviceIdentityRequest {
-    /// The client device's credentials.
-    @required
-    credential: ClientDeviceCredential
 }
 
 union ClientDeviceCredential {
     /// The client device's X.509 device certificate.
     clientDeviceCertificate: String
-}
-
-structure VerifyClientDeviceIdentityResponse {
-    /// Whether the client device's identity is valid.
-    @required
-    isValidClientDevice: Boolean
-}
-
-structure PutComponentMetricRequest {
-    @required
-    metrics: MetricsList
 }
 
 list MetricsList {
@@ -1285,16 +1173,3 @@ structure InvalidCredentialError {
 structure InvalidClientDeviceAuthTokenError {
     message: String
 }
-
-// Empty structures follow
-structure SubscribeToValidateConfigurationUpdatesRequest {}
-structure SubscribeToComponentUpdatesRequest {}
-structure DeferComponentUpdateResponse {}
-structure UpdateConfigurationResponse {}
-structure SendConfigurationValidityReportResponse {}
-structure ListLocalDeploymentsRequest {}
-structure ListComponentsRequest {}
-structure PublishToIoTCoreResponse {}
-structure PauseComponentResponse {}
-structure ResumeComponentResponse {}
-structure PutComponentMetricResponse {}
