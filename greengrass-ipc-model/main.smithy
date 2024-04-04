@@ -436,6 +436,8 @@ structure GetConfigurationResponse {
 }
 
 structure UpdateConfigurationRequest {
+    /// (Optional) The name of the component. Defaults to the name of the component that makes the request.
+    componentName: String,
     /// (Optional) The key path to the container node (the object) to update. Specify a list where each entry is the key for a single level in the configuration object. Defaults to the root of the configuration object.
     keyPath: KeyPath,
     /// The current Unix epoch time in milliseconds. This operation uses this timestamp to resolve concurrent updates to the key. If the key in the component configuration has a greater timestamp than the timestamp in the request, then the request fails.
