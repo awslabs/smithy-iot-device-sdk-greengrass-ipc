@@ -35,18 +35,6 @@ projections=(greengrass-client)
 
 repo=$workspace/${PREFIX}aws-iot-device-sdk-java-v2
 
-# Java-v2 - add generated comment and copyright text
-for entry in `find ./greengrass-client/build/smithyprojections/greengrass-client/source/event-stream-rpc-java -type f`; do
-    if [[ $entry =~ \.java$ ]]; then # only do .java files
-        printf "/**\n * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.\n * SPDX-License-Identifier: Apache-2.0.\n *\n * This file is generated.\n */\n\n" | cat - $entry > temp && mv temp $entry
-    fi
-done
-for entry in `find ./greengrass-server/build/smithyprojections/greengrass-server/source/event-stream-rpc-java -type f`; do
-    if [[ $entry =~ \.java$ ]]; then # only do .java files
-        printf "/**\n * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.\n * SPDX-License-Identifier: Apache-2.0.\n *\n * This file is generated.\n */\n\n" | cat - $entry > temp && mv temp $entry
-    fi
-done
-
 # Java-v2 - copy files (first greengrass then event-stream-rpc)
 for pkg in "${libs[@]}"; do
     mkdir -p ${repo}/sdk/greengrass/${pkg}/src/main/java

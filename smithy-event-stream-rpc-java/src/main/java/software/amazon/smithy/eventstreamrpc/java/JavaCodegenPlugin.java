@@ -21,6 +21,13 @@ public class JavaCodegenPlugin implements SmithyBuildPlugin {
 
     public static final String SMITHY_NAMESPACE_PREFIX = "smithy";
 
+    public static final String COPYRIGHT_FILE_HEADER = "/**\n"
+        + " * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.\n"
+        + " * SPDX-License-Identifier: Apache-2.0.\n"
+        + " *\n"
+        + " * This file is generated.\n"
+        + " */\n\n";
+
     @Override
     public String getName() {
         return "event-stream-rpc-java";
@@ -53,23 +60,18 @@ public class JavaCodegenPlugin implements SmithyBuildPlugin {
 
         //go through every generator and add it's files to the manifest and write them out
         generators.forEach(generator -> generator.accept(outputFile -> {
-                try {
-                    if (pluginContext.getFileManifest().getBaseDir().resolve(
-                            generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName())
-                                .toFile().exists()) {
-                        LOGGER.warning("Writing to an already existing file: " +
-                                pluginContext.getFileManifest().getBaseDir().resolve(
-                                        generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName())
-                                        .toAbsolutePath().toString() + ". Check code generation logic if generation output dir was cleaned first");
-                    } else {
-                        final Path fileOutput = outputFile.writeToPath(
-                                pluginContext.getFileManifest().getBaseDir().resolve(generator.getOutputSubdirectory()));
-                        pluginContext.getFileManifest().addFile(fileOutput);
-                        LOGGER.info("File created: " + fileOutput.toAbsolutePath().toString());
-                    }
-
-                } catch (IOException e) {
-                    throw new CodegenException(e);
+                if (pluginContext.getFileManifest().getBaseDir().resolve(
+                        generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName())
+                            .toFile().exists()) {
+                    LOGGER.warning("Writing to an already existing file: " +
+                            pluginContext.getFileManifest().getBaseDir().resolve(
+                                    generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName())
+                                    .toAbsolutePath().toString() + ". Check code generation logic if generation output dir was cleaned first");
+                } else {
+                    String fileContent = outputFile.toString();
+                    Path filename = pluginContext.getFileManifest().getBaseDir().resolve(generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName());
+                    pluginContext.getFileManifest().writeFile(filename, COPYRIGHT_FILE_HEADER + fileContent);
+                    LOGGER.info("File created: " + filename.toString());
                 }
             }));
     }
