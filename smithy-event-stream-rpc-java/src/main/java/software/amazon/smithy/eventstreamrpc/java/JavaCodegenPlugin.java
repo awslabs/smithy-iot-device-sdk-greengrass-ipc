@@ -68,8 +68,13 @@ public class JavaCodegenPlugin implements SmithyBuildPlugin {
                                     generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName())
                                     .toAbsolutePath().toString() + ". Check code generation logic if generation output dir was cleaned first");
                 } else {
+                    // The JavaFile class has addFileComment method, but it formats comments in one-line style (i.e. with //).
+                    // The only alternative is to concatenate the copyright comment with generated file content and only then
+                    // write them to the target file.
                     String fileContent = outputFile.toString();
-                    Path filename = pluginContext.getFileManifest().getBaseDir().resolve(generator.getOutputSubdirectory()).resolve(outputFile.toJavaFileObject().getName());
+                    Path filename = pluginContext.getFileManifest().getBaseDir()
+                        .resolve(generator.getOutputSubdirectory())
+                        .resolve(outputFile.toJavaFileObject().getName());
                     pluginContext.getFileManifest().writeFile(filename, COPYRIGHT_FILE_HEADER + fileContent);
                     LOGGER.info("File created: " + filename.toString());
                 }
