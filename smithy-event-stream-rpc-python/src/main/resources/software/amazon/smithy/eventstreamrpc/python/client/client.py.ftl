@@ -23,7 +23,6 @@ class ${context.getServiceShape().getId().getName()}Client(rpc.Client):
     There is a new V2 client which should be preferred.
     See the ${context.getServiceShape().getId().getName()}ClientV2 class in the clientv2 subpackage.
     </#if>
-
     Args:
         connection: Connection that this client will use.
     """
