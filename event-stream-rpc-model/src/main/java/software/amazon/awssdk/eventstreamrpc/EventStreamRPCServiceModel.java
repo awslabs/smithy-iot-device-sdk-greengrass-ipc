@@ -23,6 +23,7 @@ import software.amazon.awssdk.eventstreamrpc.model.AccessDeniedException;
 import software.amazon.awssdk.eventstreamrpc.model.EventStreamJsonMessage;
 import software.amazon.awssdk.eventstreamrpc.model.UnsupportedOperationException;
 import software.amazon.awssdk.eventstreamrpc.model.ValidationException;
+import software.amazon.awssdk.crt.utils.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -30,7 +31,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -209,17 +209,14 @@ public abstract class EventStreamRPCServiceModel {
     }
 
     private static class Base64BlobSerializerDeserializer implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
-        private static final Base64.Encoder BASE_64_ENCODER = Base64.getEncoder();
-        private static final Base64.Decoder BASE_64_DECODER = Base64.getDecoder();
-
         @Override
         public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            return BASE_64_DECODER.decode(json.getAsString());
+            return StringUtils.base64Decode(json.getAsString().getBytes());
         }
 
         @Override
         public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(BASE_64_ENCODER.encodeToString(src));
+            return new JsonPrimitive(new String(StringUtils.base64Encode(src)));
         }
     }
 
