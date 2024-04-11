@@ -242,44 +242,49 @@ operation ListNamedShadowsForThing {
     errors: [InvalidArgumentsError, ResourceNotFoundError, ServiceError, UnauthorizedError]
 }
 
-// Pause a running component
+/// Pause a running component
 operation PauseComponent {
     input:  PauseComponentRequest,
     output:  PauseComponentResponse,
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
-// Resume a paused component
+/// Resume a paused component
 operation ResumeComponent {
     input:  ResumeComponentRequest,
     output:  ResumeComponentResponse,
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
+/// Create a subscription for new certificates
 operation SubscribeToCertificateUpdates {
     input: SubscribeToCertificateUpdatesRequest,
     output: SubscribeToCertificateUpdatesResponse,
     errors: [ServiceError, UnauthorizedError, InvalidArgumentsError]
 }
 
+/// Verify client device credentials
 operation VerifyClientDeviceIdentity {
     input: VerifyClientDeviceIdentityRequest,
     output: VerifyClientDeviceIdentityResponse,
     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError]
 }
 
- operation GetClientDeviceAuthToken {
-     input: GetClientDeviceAuthTokenRequest,
-     output: GetClientDeviceAuthTokenResponse,
-     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
- }
+/// Get session token for a client device
+operation GetClientDeviceAuthToken {
+    input: GetClientDeviceAuthTokenRequest,
+    output: GetClientDeviceAuthTokenResponse,
+    errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
+}
 
+/// Send a request to authorize action on some resource
 operation AuthorizeClientDeviceAction {
      input: AuthorizeClientDeviceActionRequest,
      output: AuthorizeClientDeviceActionResponse,
      errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidClientDeviceAuthTokenError]
  }
 
+/// Send metrics
 operation PutComponentMetric {
     input: PutComponentMetricRequest,
     output: PutComponentMetricResponse,
@@ -548,7 +553,7 @@ union PublishMessage {
     binaryMessage: BinaryMessage
 }
 
-@documentation("The context is ignored if used in PublishMessage.")
+@documentation("Contextual information about the message.\nNOTE The context is ignored if used in PublishMessage.")
 structure MessageContext {
     /// The topic where the message was published.
     topic: String
