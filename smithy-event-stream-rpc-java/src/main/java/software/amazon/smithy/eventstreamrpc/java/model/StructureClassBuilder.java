@@ -93,6 +93,10 @@ public class StructureClassBuilder implements BiFunction<ClassName, StructureSha
             classBuilder.addMethod(msgConstructor.build());
         }   //end of error structure condition
 
+        final Optional<DocumentationTrait> shapeDocTrait = shape.getTrait(DocumentationTrait.class);
+        if (shapeDocTrait.isPresent()) {
+            classBuilder.addJavadoc(shapeDocTrait.get().getValue());
+        }
         shape.getAllMembers().entrySet().forEach(memberEntry -> {
             final MemberShape memberShape = memberEntry.getValue();
             final ShapeId memberShapeId = memberEntry.getValue().getTarget();
