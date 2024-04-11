@@ -29,7 +29,7 @@ tasks.withType<JavaCompile> {
 dependencies {
     testImplementation("org.json:json:20231013")
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.16")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
