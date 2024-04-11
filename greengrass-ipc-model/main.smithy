@@ -172,6 +172,7 @@ operation ListLocalDeployments {
     errors: [ServiceError]
 }
 
+/// Request for a list of components
 operation ListComponents {
     input: ListComponentsRequest,
     output: ListComponentsResponse,
@@ -192,21 +193,22 @@ operation SubscribeToIoTCore {
     errors: [ServiceError, UnauthorizedError]
 }
 
-// This API can be used only by stream manager, customer component calling this API will receive UnauthorizedError
+/// Validate authorization token
+/// NOTE This API can be used only by stream manager, customer component calling this API will receive UnauthorizedError
 operation ValidateAuthorizationToken {
     input: ValidateAuthorizationTokenRequest,
     output: ValidateAuthorizationTokenResponse,
     errors: [InvalidTokenError, UnauthorizedError, ServiceError]
 }
 
-// Retrieves a secret stored in AWS secrets manager
+/// Retrieves a secret stored in AWS secrets manager
 operation GetSecretValue {
     input: GetSecretValueRequest,
     output: GetSecretValueResponse,
     errors: [UnauthorizedError, ResourceNotFoundError, ServiceError]
 }
 
-// Generate a password for the HttpDebugView component
+/// Generate a password for the HttpDebugView component
 operation CreateDebugPassword {
     input: CreateDebugPasswordRequest,
     output: CreateDebugPasswordResponse,
@@ -284,7 +286,7 @@ operation AuthorizeClientDeviceAction {
      errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidClientDeviceAuthTokenError]
  }
 
-/// Send metrics
+/// Send component metrics
 operation PutComponentMetric {
     input: PutComponentMetricRequest,
     output: PutComponentMetricResponse,
@@ -298,7 +300,7 @@ structure SubscribeToCertificateUpdatesRequest {
     certificateOptions: CertificateOptions
 }
 
-structure CertificateOptions{
+structure CertificateOptions {
     /// The types of certificate updates to subscribe to.
     @required
     certificateType: CertificateType,
