@@ -26,7 +26,7 @@ tasks.withType<JavaCompile> {
 dependencies {
     implementation(project(":event-stream-rpc-model"))
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.16")
     implementation("org.slf4j:slf4j-api:1.7.30")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.8.1")

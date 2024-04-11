@@ -47,7 +47,7 @@ dependencies {
     runtimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 
     implementation("com.google.code.gson:gson:2.9.0")
-    implementation("software.amazon.awssdk.crt:aws-crt:0.29.9")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.16")
 }
 
 java {
