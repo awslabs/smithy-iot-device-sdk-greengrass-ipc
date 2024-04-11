@@ -208,7 +208,7 @@ operation GetSecretValue {
     errors: [UnauthorizedError, ResourceNotFoundError, ServiceError]
 }
 
-/// Generate a password for the HttpDebugView component
+/// Generate a password for the LocalDebugConsole component
 operation CreateDebugPassword {
     input: CreateDebugPasswordRequest,
     output: CreateDebugPasswordResponse,
