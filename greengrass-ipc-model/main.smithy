@@ -287,6 +287,7 @@ operation AuthorizeClientDeviceAction {
  }
 
 /// Send component metrics
+/// NOTE Only usable by AWS components
 operation PutComponentMetric {
     input: PutComponentMetricRequest,
     output: PutComponentMetricResponse,
