@@ -11,7 +11,9 @@ class ${context.getTypeName(structure)}(${baseClassName}):
     ${context.getTypeName(structure)}
 <#if structure.hasTrait("documentation")>
 
-    ${structure.findTrait("documentation").get().getValue()}
+    <#list structure.findTrait("documentation").get().getValue()?split("\n") as docLine>
+    ${docLine}
+    </#list>
 </#if>
 <#if memberShapes?has_content>
 
