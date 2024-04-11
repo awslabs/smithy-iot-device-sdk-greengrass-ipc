@@ -172,6 +172,7 @@ operation ListLocalDeployments {
     errors: [ServiceError]
 }
 
+/// Request for a list of components
 operation ListComponents {
     input: ListComponentsRequest,
     output: ListComponentsResponse,
@@ -192,21 +193,22 @@ operation SubscribeToIoTCore {
     errors: [ServiceError, UnauthorizedError]
 }
 
-// This API can be used only by stream manager, customer component calling this API will receive UnauthorizedError
+/// Validate authorization token
+/// NOTE This API can be used only by stream manager, customer component calling this API will receive UnauthorizedError
 operation ValidateAuthorizationToken {
     input: ValidateAuthorizationTokenRequest,
     output: ValidateAuthorizationTokenResponse,
     errors: [InvalidTokenError, UnauthorizedError, ServiceError]
 }
 
-// Retrieves a secret stored in AWS secrets manager
+/// Retrieves a secret stored in AWS secrets manager
 operation GetSecretValue {
     input: GetSecretValueRequest,
     output: GetSecretValueResponse,
     errors: [UnauthorizedError, ResourceNotFoundError, ServiceError]
 }
 
-// Generate a password for the HttpDebugView component
+/// Generate a password for the LocalDebugConsole component
 operation CreateDebugPassword {
     input: CreateDebugPasswordRequest,
     output: CreateDebugPasswordResponse,
@@ -242,44 +244,50 @@ operation ListNamedShadowsForThing {
     errors: [InvalidArgumentsError, ResourceNotFoundError, ServiceError, UnauthorizedError]
 }
 
-// Pause a running component
+/// Pause a running component
 operation PauseComponent {
     input:  PauseComponentRequest,
     output:  PauseComponentResponse,
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
-// Resume a paused component
+/// Resume a paused component
 operation ResumeComponent {
     input:  ResumeComponentRequest,
     output:  ResumeComponentResponse,
     errors: [UnauthorizedError, ServiceError, ResourceNotFoundError]
 }
 
+/// Create a subscription for new certificates
 operation SubscribeToCertificateUpdates {
     input: SubscribeToCertificateUpdatesRequest,
     output: SubscribeToCertificateUpdatesResponse,
     errors: [ServiceError, UnauthorizedError, InvalidArgumentsError]
 }
 
+/// Verify client device credentials
 operation VerifyClientDeviceIdentity {
     input: VerifyClientDeviceIdentityRequest,
     output: VerifyClientDeviceIdentityResponse,
     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError]
 }
 
- operation GetClientDeviceAuthToken {
-     input: GetClientDeviceAuthTokenRequest,
-     output: GetClientDeviceAuthTokenResponse,
-     errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
- }
+/// Get session token for a client device
+operation GetClientDeviceAuthToken {
+    input: GetClientDeviceAuthTokenRequest,
+    output: GetClientDeviceAuthTokenResponse,
+    errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidCredentialError]
+}
 
+/// Send a request to authorize action on some resource
 operation AuthorizeClientDeviceAction {
      input: AuthorizeClientDeviceActionRequest,
      output: AuthorizeClientDeviceActionResponse,
      errors: [UnauthorizedError, ServiceError, InvalidArgumentsError, InvalidClientDeviceAuthTokenError]
  }
 
+/// Send component metrics
+/// NOTE Only usable by AWS components
 operation PutComponentMetric {
     input: PutComponentMetricRequest,
     output: PutComponentMetricResponse,
@@ -293,7 +301,7 @@ structure SubscribeToCertificateUpdatesRequest {
     certificateOptions: CertificateOptions
 }
 
-structure CertificateOptions{
+structure CertificateOptions {
     /// The types of certificate updates to subscribe to.
     @required
     certificateType: CertificateType,
@@ -548,7 +556,7 @@ union PublishMessage {
     binaryMessage: BinaryMessage
 }
 
-@documentation("The context is ignored if used in PublishMessage.")
+@documentation("Contextual information about the message.\nNOTE The context is ignored if used in PublishMessage.")
 structure MessageContext {
     /// The topic where the message was published.
     topic: String

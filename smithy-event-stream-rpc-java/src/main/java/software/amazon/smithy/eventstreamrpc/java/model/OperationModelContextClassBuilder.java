@@ -9,6 +9,7 @@ import com.squareup.javapoet.*;
 import software.amazon.smithy.eventstreamrpc.java.PoetryWriter;
 import software.amazon.smithy.eventstreamrpc.java.ServiceCodegenContext;
 import software.amazon.smithy.model.shapes.OperationShape;
+import software.amazon.smithy.model.traits.DocumentationTrait;
 
 import javax.lang.model.element.Modifier;
 import java.util.Optional;
@@ -37,6 +38,11 @@ public class OperationModelContextClassBuilder implements Function<OperationShap
         final ClassName responseClassName = context.getOperationResponseClassName(operationShape);
         final ClassName streamingRequestClassName = context.getOperationStreamingRequestClassName(operationShape);
         final ClassName streamingResponseClassName = context.getOperationStreamingResponseClassName(operationShape);
+
+        final Optional<DocumentationTrait> operationDocTrait = operationShape.getTrait(DocumentationTrait.class);
+        if (operationDocTrait.isPresent()) {
+            classBuilder.addJavadoc(operationDocTrait.get().getValue());
+        }
 
         classBuilder.addSuperinterface(
                 ParameterizedTypeName.get(PoetryWriter.CN_OPERATION_MODEL_CONTEXT,
