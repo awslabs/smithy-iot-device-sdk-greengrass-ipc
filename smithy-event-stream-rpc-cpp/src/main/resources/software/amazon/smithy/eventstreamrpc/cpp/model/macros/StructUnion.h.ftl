@@ -14,6 +14,9 @@
 <#else>
     <#local BaseClass = "AbstractShapeBase"/>
 </#if>
+<#if convertedShape.hasTrait("documentation")>
+<@placeIndents quantity=indents/>/** ${convertedShape.findTrait("documentation").get().getValue()} */
+</#if>
 <@placeIndents quantity=indents/>class ${export} ${PascalCaseMemberName} : public ${BaseClass}
 <@placeIndents quantity=indents/>{
 <@placeIndents quantity=indents/>    public:
@@ -29,31 +32,30 @@
     <#local PascalCase = fn_camel_to_pascal.apply(memberShape.getMemberName())>
     <#local camelCase = memberShape.getMemberName()>
     <#local memberTargetShape = context.getShape(memberShape.getTarget())>
+    <#local memberDocMessage = "">
+    <#if memberShape.hasTrait("documentation")>
+        <#local memberDocMessage += " * " + memberShape.findTrait("documentation").get().getValue() + "\n">
+    </#if>
     <#if memberShape.hasTrait("deprecated")>
-        <#local deprecationMessage = "/* Deprecated">
+        <#local memberDocMessage += " * @deprecated">
         <#if memberShape.findTrait("deprecated").get().getSince().isPresent()>
-            <#local deprecationMessage = deprecationMessage + " in " + memberShape.findTrait("deprecated").get().getSince().get()>
+            <#local memberDocMessage += " in " + memberShape.findTrait("deprecated").get().getSince().get()>
         </#if>
         <#if memberShape.findTrait("deprecated").get().getMessage().isPresent()>
-            <#local deprecationMessage = deprecationMessage + " " + memberShape.findTrait("deprecated").get().getMessage().get()>
+            <#local memberDocMessage += " " + memberShape.findTrait("deprecated").get().getMessage().get()>
         </#if>
-        <#local deprecationMessage = deprecationMessage + " */">
-<@placeIndents quantity=indents/>        ${deprecationMessage}
+        <#local memberDocMessage += "\n">
     </#if>
-    <#if memberTargetShape.hasTrait("documentation")>
-        <#local docMessage = "/* " + memberTargetShape.findTrait("documentation").get().getValue() + " */">
-<@placeIndents quantity=indents/>        ${docMessage}
+    <#if memberDocMessage?length gt 0>
+        <#local memberDocMessage = "/**\n" + memberDocMessage + " */">
     </#if>
     <#if memberTargetShape.hasTrait("enum")>
+<@placeIndents quantity=indents/>        ${memberDocMessage}
 <@placeIndents quantity=indents/>        void Set${PascalCase}(${memberTargetShape.getId().name} ${camelCase}) noexcept;
-        <#if memberShape.hasTrait("deprecated")>
-<@placeIndents quantity=indents/>        ${deprecationMessage}
-        </#if>
-        <#if memberTargetShape.hasTrait("documentation")>
-<@placeIndents quantity=indents/>        ${docMessage}
-        </#if>
+<@placeIndents quantity=indents/>        ${memberDocMessage}
 <@placeIndents quantity=indents/>        Aws::Crt::Optional<${memberTargetShape.getId().name}> Get${PascalCase}() noexcept;
     <#else>
+<@placeIndents quantity=indents/>        ${memberDocMessage}
 <@placeIndents quantity=indents/>        void Set${PascalCase}(const ${context.getTypeName(memberShape)}& ${camelCase}) noexcept {
     <#if shape.getDataShape().get().getType().name() == "UNION">
 <@placeIndents quantity=indents/>            m_${camelCase} = ${camelCase};
@@ -62,12 +64,7 @@
 <@placeIndents quantity=indents/>            m_${camelCase} = ${camelCase};
     </#if>
 <@placeIndents quantity=indents/>        }
-        <#if memberShape.hasTrait("deprecated")>
-<@placeIndents quantity=indents/>        ${deprecationMessage}
-        </#if>
-        <#if memberTargetShape.hasTrait("documentation")>
-<@placeIndents quantity=indents/>        ${docMessage}
-        </#if>
+<@placeIndents quantity=indents/>        ${memberDocMessage}
 <#if convertedShape.hasTrait("error") && PascalCase == "Message">
 <@placeIndents quantity=indents/>        Aws::Crt::Optional<${context.getTypeName(memberShape)}> Get${PascalCase}() noexcept override {
 <#else>

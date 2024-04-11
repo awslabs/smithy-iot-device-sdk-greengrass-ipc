@@ -44,6 +44,13 @@ using namespace Aws::Eventstreamrpc;
 
 <#list operations as operation>
 <#assign OperationPascalCaseName = operation.getId().getName()/>
+<#if operation.hasTrait("documentation")>
+    /**
+    <#list operation.findTrait("documentation").get().getValue()?split("\n") as docLine>
+      * ${docLine}
+    </#list>
+      */
+</#if>
 <#if context.getOutputEventStreamInfo(operation).isPresent()>
                 std::shared_ptr<${OperationPascalCaseName}Operation> New${OperationPascalCaseName}(std::shared_ptr<${OperationPascalCaseName}StreamHandler> streamHandler) noexcept;
 <#else>

@@ -9,6 +9,10 @@
 class ${context.getTypeName(structure)}(${baseClassName}):
     """
     ${context.getTypeName(structure)}
+<#if structure.hasTrait("documentation")>
+
+    ${structure.findTrait("documentation").get().getValue()}
+</#if>
 <#if memberShapes?has_content>
 
     All attributes are None by default, and may be set by keyword in the constructor.
