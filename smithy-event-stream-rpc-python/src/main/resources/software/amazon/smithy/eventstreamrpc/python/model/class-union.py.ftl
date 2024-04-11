@@ -4,6 +4,10 @@
 class ${context.getTypeName(union)}(rpc.Shape):
     """
     ${context.getTypeName(union)} is a "tagged union" class.
+<#if union.hasTrait("documentation")>
+
+    ${union.findTrait("documentation").get().getValue()}
+</#if>
 <#if memberShapes?has_content>
 
     When sending, only one of the attributes may be set.

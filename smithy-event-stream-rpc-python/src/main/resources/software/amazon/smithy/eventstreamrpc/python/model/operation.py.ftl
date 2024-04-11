@@ -1,4 +1,12 @@
 class _${operation.getId().getName()}Operation(rpc.ClientOperation):
+<#if operation.hasTrait("documentation")>
+    """
+<#list operation.findTrait("documentation").get().getValue()?split("\n") as docLine>
+    ${docLine}
+</#list>
+    """
+
+</#if>
     @classmethod
     def _model_name(cls):
         return '${operation.getId()}'
