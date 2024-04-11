@@ -15,7 +15,11 @@
     <#local BaseClass = "AbstractShapeBase"/>
 </#if>
 <#if convertedShape.hasTrait("documentation")>
-<@placeIndents quantity=indents/>/** ${convertedShape.findTrait("documentation").get().getValue()} */
+<@placeIndents quantity=indents/>/**
+    <#list convertedShape.findTrait("documentation").get().getValue()?split("\n") as docLine>
+<@placeIndents quantity=indents/> * ${docLine}
+    </#list>
+<@placeIndents quantity=indents/> */
 </#if>
 <@placeIndents quantity=indents/>class ${export} ${PascalCaseMemberName} : public ${BaseClass}
 <@placeIndents quantity=indents/>{

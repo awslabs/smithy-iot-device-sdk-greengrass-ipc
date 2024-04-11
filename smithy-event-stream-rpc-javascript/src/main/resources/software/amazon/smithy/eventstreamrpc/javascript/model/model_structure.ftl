@@ -6,7 +6,9 @@
 <#if hasShapeDocumentation>
 <#assign shapeDocumentation = context.getDocumentation(dataShape)>
 /**
- * ${shapeDocumentation}
+<#list shapeDocumentation?split("\n") as docLine>
+ * ${docLine}
+</#list>
  */
 </#if>
 <#elseif shape.getDataShape().get().getType().name() == "UNION">
@@ -15,7 +17,9 @@
 <#if hasShapeDocumentation>
 <#assign shapeDocumentation = context.getDocumentation(dataShape)>
 /**
- * ${shapeDocumentation}
+<#list shapeDocumentation?split("\n") as docLine>
+ * ${docLine}
+</#list>
  *
  * ${context.getTypeName(downcastShape)} is a union type.  One and only one member must be set.
  */
