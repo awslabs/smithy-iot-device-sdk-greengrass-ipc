@@ -144,7 +144,9 @@ export class Client extends EventEmitter {
 <#if operationHasDocumentation>
 <#assign operationDocumentation = context.getDocumentation(operation)>
      *
-     * ${operationDocumentation}
+<#list operationDocumentation?split("\n") as docLine>
+     * ${docLine}
+</#list>
 </#if>
      *
      * @param request data describing the ${operationName} operation to perform
