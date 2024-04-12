@@ -59,7 +59,7 @@ public class EventStreamRPCConnectionConfig {
 
         //bit of C++ RAII here, validate what we can
         if (clientBootstrap == null || eventLoopGroup == null || socketOptions == null ||
-            host == null || host.isEmpty() || port < 0) {
+            host == null || host.isEmpty()) {
             throw new IllegalArgumentException("EventStreamRPCConnectionConfig values are invalid!");
         }
     }
