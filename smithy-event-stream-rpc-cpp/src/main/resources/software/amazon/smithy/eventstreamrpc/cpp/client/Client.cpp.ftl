@@ -16,7 +16,7 @@
             ${serviceName}Client::${serviceName}Client(
                 Aws::Crt::Io::ClientBootstrap &clientBootstrap,
                 Aws::Crt::Allocator *allocator) noexcept
-                : m_connection(allocator), m_clientBootstrap(clientBootstrap), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
+                : m_connection(allocator, clientBootstrap.GetUnderlyingHandle()), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
             {
 <#list allShapes as shape>
 <#if shape.getDataShape().get().hasTrait("error")>
@@ -32,7 +32,7 @@
                 ConnectionLifecycleHandler &lifecycleHandler,
                 const ConnectionConfig &connectionConfig) noexcept
             {
-                return m_connection.Connect(connectionConfig, &lifecycleHandler, m_clientBootstrap);
+                return m_connection.Connect(connectionConfig, &lifecycleHandler);
             }
 
             void ${serviceName}Client::Close() noexcept { m_connection.Close(); }

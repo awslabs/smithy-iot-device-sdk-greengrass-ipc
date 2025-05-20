@@ -64,7 +64,6 @@ using namespace Aws::Eventstreamrpc;
               private:
                 ${serviceName}ServiceModel m_${serviceName?uncap_first}ServiceModel;
                 ClientConnection m_connection;
-                Aws::Crt::Io::ClientBootstrap &m_clientBootstrap;
                 Aws::Crt::Allocator *m_allocator;
                 MessageAmendment m_connectAmendment;
                 std::launch m_asyncLaunchMode;

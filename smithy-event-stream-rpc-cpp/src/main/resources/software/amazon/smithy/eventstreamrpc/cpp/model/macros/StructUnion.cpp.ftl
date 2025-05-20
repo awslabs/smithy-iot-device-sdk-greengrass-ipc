@@ -101,7 +101,7 @@
 <@placeIndents quantity=indents/>    }
 <@placeIndents quantity=indents/>}
 
-<@placeIndents quantity=indents/>Aws::Crt::Optional<${memberTargetShape.getId().name}> ${PascalCaseStructUnionName}::Get${PascalCaseMemberName}() noexcept
+<@placeIndents quantity=indents/>Aws::Crt::Optional<${memberTargetShape.getId().name}> ${PascalCaseStructUnionName}::Get${PascalCaseMemberName}() const noexcept
 <@placeIndents quantity=indents/>{
 <@placeIndents quantity=indents/>    if (!m_${camelCaseMemberName}.has_value()) return Aws::Crt::Optional<${memberTargetShape.getId().name}>();
 <#list fn_get_enum_defs_from_shape.apply(memberTargetShape) as enum_def>
