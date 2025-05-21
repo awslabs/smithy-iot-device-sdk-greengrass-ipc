@@ -38,7 +38,7 @@ using namespace Aws::Eventstreamrpc;
                 std::future<RpcError> Connect(
                     ConnectionLifecycleHandler &lifecycleHandler,
                     const ConnectionConfig &connectionConfig = DefaultConnectionConfig()) noexcept;
-                bool IsConnected() const noexcept { return m_connection.IsOpen(); }
+                bool IsConnected() const noexcept { return m_connection->IsOpen(); }
                 void Close() noexcept;
                 void WithLaunchMode(std::launch mode) noexcept;
 
@@ -63,7 +63,7 @@ using namespace Aws::Eventstreamrpc;
 
               private:
                 ${serviceName}ServiceModel m_${serviceName?uncap_first}ServiceModel;
-                ClientConnection m_connection;
+                std::shared_ptr<ClientConnection> m_connection;
                 Aws::Crt::Allocator *m_allocator;
                 MessageAmendment m_connectAmendment;
                 std::launch m_asyncLaunchMode;

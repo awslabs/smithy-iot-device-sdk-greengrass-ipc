@@ -16,7 +16,7 @@
             ${serviceName}Client::${serviceName}Client(
                 Aws::Crt::Io::ClientBootstrap &clientBootstrap,
                 Aws::Crt::Allocator *allocator) noexcept
-                : m_connection(allocator, clientBootstrap.GetUnderlyingHandle()), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
+                : m_connection(Aws::Crt::MakeShared<ClientConnection>(allocator, allocator, clientBootstrap.GetUnderlyingHandle())), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
             {
 <#list allShapes as shape>
 <#if shape.getDataShape().get().hasTrait("error")>
@@ -32,10 +32,10 @@
                 ConnectionLifecycleHandler &lifecycleHandler,
                 const ConnectionConfig &connectionConfig) noexcept
             {
-                return m_connection.Connect(connectionConfig, &lifecycleHandler);
+                return m_connection->Connect(connectionConfig, &lifecycleHandler);
             }
 
-            void ${serviceName}Client::Close() noexcept { m_connection.Close(); }
+            void ${serviceName}Client::Close() noexcept { m_connection->Close(); }
 
             void ${serviceName}Client::WithLaunchMode(std::launch mode) noexcept { m_asyncLaunchMode = mode; }
 
@@ -51,7 +51,7 @@
             {
                 return Aws::Crt::MakeShared<${OperationPascalCaseName}Operation>(
                     m_allocator,
-                    m_connection,
+                    *m_connection,
                     std::move(streamHandler),
                     m_${serviceName?uncap_first}ServiceModel.m_${operationPascalCaseName}OperationContext,
                     m_allocator);
@@ -62,7 +62,7 @@
             std::shared_ptr<${OperationPascalCaseName}Operation> ${serviceName}Client::New${OperationPascalCaseName}() noexcept
             {
                 auto operation = Aws::Crt::MakeShared<${OperationPascalCaseName}Operation>(
-                    m_allocator, m_connection, m_${serviceName?uncap_first}ServiceModel.m_${operationPascalCaseName}OperationContext, m_allocator);
+                    m_allocator, *m_connection, m_${serviceName?uncap_first}ServiceModel.m_${operationPascalCaseName}OperationContext, m_allocator);
                 operation->WithLaunchMode(m_asyncLaunchMode);
                 return operation;
             }
