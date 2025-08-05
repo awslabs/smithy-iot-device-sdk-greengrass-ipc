@@ -24,7 +24,7 @@
 <@placeIndents quantity=indents/>class ${export} ${PascalCaseMemberName} : public ${BaseClass}
 <@placeIndents quantity=indents/>{
 <@placeIndents quantity=indents/>    public:
-<@placeIndents quantity=indents/>        ${PascalCaseMemberName}() noexcept {}
+<@placeIndents quantity=indents/>        ${PascalCaseMemberName}() noexcept {};
 <#--A custom destructor must be defined for a tagged union.-->
 <#if shape.getDataShape().get().getType().name() == "UNION">
 <@placeIndents quantity=indents/>        ${PascalCaseMemberName}& operator=(const ${PascalCaseMemberName} &) noexcept;

@@ -22,9 +22,9 @@
 <#list operations as operation>
     <@newOperation operation=operation context=context indents=3/>
 </#list>
-            ${serviceName}ServiceModel::${serviceName}ServiceModel() noexcept :
+            ${serviceName}ServiceModel::${serviceName}ServiceModel(Aws::Crt::Allocator *allocator) noexcept :
             <#list operations as operation>
-                m_${operation.getId().getName()?uncap_first}OperationContext(*this)<#if operation_has_next>,</#if>
+                m_${operation.getId().getName()?uncap_first}OperationContext(Aws::Crt::MakeShared<${operation.getId().getName()}OperationContext>(allocator, *this))<#if operation_has_next>,</#if>
             </#list>
             {
             }

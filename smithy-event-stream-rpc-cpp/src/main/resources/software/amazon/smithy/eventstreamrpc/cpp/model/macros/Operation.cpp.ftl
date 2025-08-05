@@ -24,6 +24,22 @@
 <@placeIndents quantity=indents/>}
 </#if>
 
+<@placeIndents quantity=indents/>class ${OperationPascalCaseName}OperationContext : public OperationModelContext
+<@placeIndents quantity=indents/>{
+<@placeIndents quantity=indents/>    public:
+<@placeIndents quantity=indents/>        ${OperationPascalCaseName}OperationContext(const ${context.getServiceShapeName()}ServiceModel &serviceModel) noexcept;
+<@placeIndents quantity=indents/>        Aws::Crt::ScopedResource<AbstractShapeBase> AllocateInitialResponseFromPayload(
+<@placeIndents quantity=indents/>            Aws::Crt::StringView stringView,
+<@placeIndents quantity=indents/>            Aws::Crt::Allocator *allocator = Aws::Crt::g_allocator) const noexcept override;
+<@placeIndents quantity=indents/>        Aws::Crt::ScopedResource<AbstractShapeBase> AllocateStreamingResponseFromPayload(
+<@placeIndents quantity=indents/>            Aws::Crt::StringView stringView,
+<@placeIndents quantity=indents/>            Aws::Crt::Allocator *allocator = Aws::Crt::g_allocator) const noexcept override;
+<@placeIndents quantity=indents/>        Aws::Crt::String GetRequestModelName() const noexcept override;
+<@placeIndents quantity=indents/>        Aws::Crt::String GetInitialResponseModelName() const noexcept override;
+<@placeIndents quantity=indents/>        Aws::Crt::Optional<Aws::Crt::String> GetStreamingResponseModelName() const noexcept override;
+<@placeIndents quantity=indents/>        Aws::Crt::String GetOperationName() const noexcept override;
+<@placeIndents quantity=indents/>};
+
 <@placeIndents quantity=indents/>${OperationPascalCaseName}OperationContext::${OperationPascalCaseName}OperationContext(
 <@placeIndents quantity=indents/>    const ${context.getServiceShapeName()}ServiceModel &serviceModel) noexcept
 <@placeIndents quantity=indents/>    : OperationModelContext(serviceModel)
@@ -76,9 +92,7 @@
 
 <@placeIndents quantity=indents/>std::future<${OperationPascalCaseName}Result> ${OperationPascalCaseName}Operation::GetResult() noexcept
 <@placeIndents quantity=indents/>{
-<@placeIndents quantity=indents/>    return std::async(m_asyncLaunchMode, [this](){
-<@placeIndents quantity=indents/>        return ${OperationPascalCaseName}Result(GetOperationResult().get());
-<@placeIndents quantity=indents/>    });
+<@placeIndents quantity=indents/>    return m_resultPromise->get_future();
 <@placeIndents quantity=indents/>}
 
 <@placeIndents quantity=indents/>${OperationPascalCaseName}Operation::${OperationPascalCaseName}Operation(
@@ -86,13 +100,14 @@
     <#if context.getOutputEventStreamInfo(operation).isPresent()>
 <@placeIndents quantity=indents/>    std::shared_ptr<${OperationPascalCaseName}StreamHandler> streamHandler,
     </#if>
-<@placeIndents quantity=indents/>    const ${OperationPascalCaseName}OperationContext &operationContext,
+<@placeIndents quantity=indents/>    const std::shared_ptr<OperationModelContext> &operationContext,
 <@placeIndents quantity=indents/>    Aws::Crt::Allocator *allocator) noexcept
     <#if context.getOutputEventStreamInfo(operation).isPresent()>
-<@placeIndents quantity=indents/>    : ClientOperation(connection, streamHandler, operationContext, allocator)
+<@placeIndents quantity=indents/>    : ClientOperation(connection, streamHandler, operationContext, allocator),
     <#else>
-<@placeIndents quantity=indents/>    : ClientOperation(connection, nullptr, operationContext, allocator)
+<@placeIndents quantity=indents/>    : ClientOperation(connection, nullptr, operationContext, allocator),
     </#if>
+<@placeIndents quantity=indents/>      m_resultPromise(Aws::Crt::MakeShared<std::promise<${OperationPascalCaseName}Result>>(allocator))
 <@placeIndents quantity=indents/>{
 <@placeIndents quantity=indents/>}
 
@@ -100,12 +115,20 @@
 <@placeIndents quantity=indents/>    const ${context.getRequestClassName(operation)} &request,
 <@placeIndents quantity=indents/>    OnMessageFlushCallback onMessageFlushCallback) noexcept
 <@placeIndents quantity=indents/>{
-<@placeIndents quantity=indents/>    return ClientOperation::Activate(static_cast<const AbstractShapeBase *>(&request), onMessageFlushCallback);
+<@placeIndents quantity=indents/>    auto promiseReference = m_resultPromise;
+
+<@placeIndents quantity=indents/>    auto activateFuture = ClientOperation::Activate(static_cast<const AbstractShapeBase *>(&request), std::move(onMessageFlushCallback), [promiseReference](EventstreamResultVariantType &&unmodeledResult){
+<@placeIndents quantity=indents/>        promiseReference->set_value(${OperationPascalCaseName}Result(std::move(unmodeledResult)));
+<@placeIndents quantity=indents/>    });
+
+<@placeIndents quantity=indents/>    return activateFuture;
 <@placeIndents quantity=indents/>}
 
-<@placeIndents quantity=indents/>Aws::Crt::String ${OperationPascalCaseName}Operation::GetModelName() const noexcept
-<@placeIndents quantity=indents/>{
-<@placeIndents quantity=indents/>    return m_operationModelContext.GetOperationName();
-<@placeIndents quantity=indents/>}
+<#if context.getInputEventStreamInfo(operation).isPresent()>
+<#assign requestStreamType = context.getInputEventStreamInfo(operation).get().getEventStreamTarget().getId().getName()>
+std::future<RpcError> ${OperationPascalCaseName}Operation::SendStreamMessage(const ${requestStreamType} &message, OnMessageFlushCallback onMessageFlushCallback) {
+    return ClientOperation::SendStreamMessage(static_cast<const AbstractShapeBase *>(&message), std::move(onMessageFlushCallback));
+}
 
+</#if>
 </#macro>

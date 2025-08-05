@@ -13,10 +13,11 @@
 #include <aws/crt/Types.h>
 
 <@startNamespace namespaceList=context.getNamespaceAsList() spacesPerTab=4/>
+
             ${serviceName}Client::${serviceName}Client(
                 Aws::Crt::Io::ClientBootstrap &clientBootstrap,
                 Aws::Crt::Allocator *allocator) noexcept
-                : m_connection(Aws::Crt::MakeShared<ClientConnection>(allocator, allocator, clientBootstrap.GetUnderlyingHandle())), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
+                : m_${serviceName?uncap_first}ServiceModel(allocator), m_connection(Aws::Crt::MakeShared<ClientConnection>(allocator, allocator, clientBootstrap.GetUnderlyingHandle())), m_allocator(allocator), m_asyncLaunchMode(std::launch::deferred)
             {
 <#list allShapes as shape>
 <#if shape.getDataShape().get().hasTrait("error")>
