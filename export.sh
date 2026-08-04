@@ -66,3 +66,10 @@ for pkg in "${projections[@]}"; do
 done
 
 popd > /dev/null
+
+# Format C++v2
+pushd ${repo} > /dev/null
+
+python3 format-check.py -i
+
+popd > /dev/null
