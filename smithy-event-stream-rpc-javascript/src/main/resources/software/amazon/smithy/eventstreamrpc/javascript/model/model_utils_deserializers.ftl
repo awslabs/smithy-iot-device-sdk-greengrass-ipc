@@ -15,6 +15,9 @@ export function deserialize${className}(value : model.${className}) : model.${cl
     ${context.getDeserializeLine(shapeMember)}
 </#if>
 </#list>
+<#if context.hasSensitiveMembers(downcastShape)>
+    eventstream_rpc_utils.applySensitiveDataRedaction(value, [<#list context.getSensitiveMemberNames(downcastShape) as sensitiveMemberName>'${sensitiveMemberName}'<#sep>, </#sep></#list>]);
+</#if>
     return value;
 }
 

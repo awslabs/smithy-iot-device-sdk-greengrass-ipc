@@ -136,6 +136,30 @@ public class ServiceCodegenContext {
         return null;
     }
 
+    /**
+     * A member is treated as sensitive when the {@link SensitiveTrait} is applied to the member itself,
+     * to the shape the member targets, or to the enclosing structure/union.
+     */
+    public boolean isSensitiveMember(Shape enclosingShape, MemberShape memberShape) {
+        if (enclosingShape.hasTrait(SensitiveTrait.class) || memberShape.hasTrait(SensitiveTrait.class)) {
+            return true;
+        }
+        return model.getShape(memberShape.getTarget())
+                .map(target -> target.hasTrait(SensitiveTrait.class))
+                .orElse(false);
+    }
+
+    public boolean hasSensitiveMembers(Shape shape) {
+        return shape.members().stream().anyMatch(memberShape -> isSensitiveMember(shape, memberShape));
+    }
+
+    public List<String> getSensitiveMemberNames(Shape shape) {
+        return shape.members().stream()
+                .filter(memberShape -> isSensitiveMember(shape, memberShape))
+                .map(MemberShape::getMemberName)
+                .collect(Collectors.toList());
+    }
+
     public static String getOperationResponseSuffix() {
         return "Response";
     }
