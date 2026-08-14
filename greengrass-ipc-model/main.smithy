@@ -40,7 +40,8 @@ service GreengrassCoreIPC {
         VerifyClientDeviceIdentity,
         GetClientDeviceAuthToken,
         AuthorizeClientDeviceAction,
-        PutComponentMetric
+        PutComponentMetric,
+        SubscribeToIoTCoreConnectionStatus
     ]
 }
 
@@ -191,6 +192,13 @@ operation SubscribeToIoTCore {
     input: SubscribeToIoTCoreRequest,
     output: SubscribeToIoTCoreResponse,
     errors: [ServiceError, UnauthorizedError]
+}
+
+/// Subscribe to the connection status of the IoT Core MQTT connection.
+operation SubscribeToIoTCoreConnectionStatus {
+    input: SubscribeToIoTCoreConnectionStatusRequest,
+    output: SubscribeToIoTCoreConnectionStatusResponse,
+    errors: [ServiceError]
 }
 
 /// Validate authorization token
@@ -352,6 +360,7 @@ structure GetClientDeviceAuthTokenRequest {
      /// The username. (unused).
      username: String,
      /// The password. (unused).
+     @sensitive
      password: String
  }
 
@@ -894,6 +903,7 @@ structure CreateDebugPasswordRequest {
 
 structure CreateDebugPasswordResponse {
     @required
+    @sensitive
     password: String,
     @required
     username: String,
@@ -1308,3 +1318,33 @@ structure PublishToIoTCoreResponse {}
 structure PauseComponentResponse {}
 structure ResumeComponentResponse {}
 structure PutComponentMetricResponse {}
+
+structure SubscribeToIoTCoreConnectionStatusRequest {}
+
+structure SubscribeToIoTCoreConnectionStatusResponse {
+    connectionStatusEvent: IoTCoreConnectionStatusEvent
+}
+
+@streaming
+union IoTCoreConnectionStatusEvent {
+    /// The connection status event.
+    connectionStatusEvent: ConnectionStatusEvent
+}
+
+structure ConnectionStatusEvent {
+    /// The connection status.
+    @required
+    status: ConnectionStatus
+}
+
+@enum([
+    {
+        value: "CONNECTED",
+        name: "CONNECTED"
+    },
+    {
+        value: "DISCONNECTED",
+        name: "DISCONNECTED"
+    }
+])
+string ConnectionStatus

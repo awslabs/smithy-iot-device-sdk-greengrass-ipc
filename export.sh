@@ -57,30 +57,19 @@ done
 # C++-v2 - setup
 projections=(greengrass-client test-model-codegen)
 
-# C++-v2 - Check if clang-format-8 is installed
-if NOT type clang-format-8 2> /dev/null ; then
-    echo "No appropriate clang-format-8 found."
-    exit 1
-fi
-
 # C++-v2 - additional setup
 repo=$workspace/${PREFIX}aws-iot-device-sdk-cpp-v2
 
-# Verify that the cpp-v2 repo contains a .clang-format file and copy it
-if [ ! -f $repo/.clang-format ]; then
-    echo "No .clang-format in $repo could be found"
-    exit 1
-else
-    cp $repo/.clang-format $workspace
-fi
-
 # C++-v2 - copy files (event-stream-rpc)
 for pkg in "${projections[@]}"; do
-    find ./${pkg}/build/smithyprojections/${pkg}/source/event-stream-rpc-cpp -iname *.h -o -iname *.cpp | xargs clang-format-8 -i -style=file
     cp -Rv ./${pkg}/build/smithyprojections/${pkg}/source/event-stream-rpc-cpp/. ${repo}
 done
 
-# C++-v2 - Clean up copied clang-format file
-rm $workspace/.clang-format
+popd > /dev/null
+
+# Format C++v2
+pushd ${repo} > /dev/null
+
+python3 format-check.py -i
 
 popd > /dev/null

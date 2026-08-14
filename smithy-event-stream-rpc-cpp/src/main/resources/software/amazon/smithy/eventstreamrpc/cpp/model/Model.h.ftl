@@ -38,7 +38,7 @@ using namespace Aws::Eventstreamrpc;
             class ${export} ${serviceName}ServiceModel : public ServiceModel
             {
               public:
-                ${serviceName}ServiceModel() noexcept;
+                ${serviceName}ServiceModel(Aws::Crt::Allocator *allocator) noexcept;
                 Aws::Crt::ScopedResource<OperationError> AllocateOperationErrorFromPayload(
                     const Aws::Crt::String &errorModelName,
                     Aws::Crt::StringView stringView,
@@ -47,7 +47,7 @@ using namespace Aws::Eventstreamrpc;
               private:
                 friend class ${serviceName}Client;
               <#list operations as operation>
-                ${operation.getId().getName()}OperationContext m_${operation.getId().getName()?uncap_first}OperationContext;
+                std::shared_ptr<OperationModelContext> m_${operation.getId().getName()?uncap_first}OperationContext;
               </#list>
                 Aws::Crt::Map<Aws::Crt::String, ErrorResponseFactory> m_modelNameToErrorResponse;
             };

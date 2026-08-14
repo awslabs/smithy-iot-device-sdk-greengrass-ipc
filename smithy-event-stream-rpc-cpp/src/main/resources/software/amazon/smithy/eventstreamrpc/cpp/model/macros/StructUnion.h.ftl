@@ -24,7 +24,7 @@
 <@placeIndents quantity=indents/>class ${export} ${PascalCaseMemberName} : public ${BaseClass}
 <@placeIndents quantity=indents/>{
 <@placeIndents quantity=indents/>    public:
-<@placeIndents quantity=indents/>        ${PascalCaseMemberName}() noexcept {}
+<@placeIndents quantity=indents/>        ${PascalCaseMemberName}() noexcept {};
 <#--A custom destructor must be defined for a tagged union.-->
 <#if shape.getDataShape().get().getType().name() == "UNION">
 <@placeIndents quantity=indents/>        ${PascalCaseMemberName}& operator=(const ${PascalCaseMemberName} &) noexcept;
@@ -57,7 +57,7 @@
 <@placeIndents quantity=indents/>        ${memberDocMessage}
 <@placeIndents quantity=indents/>        void Set${PascalCase}(${memberTargetShape.getId().name} ${camelCase}) noexcept;
 <@placeIndents quantity=indents/>        ${memberDocMessage}
-<@placeIndents quantity=indents/>        Aws::Crt::Optional<${memberTargetShape.getId().name}> Get${PascalCase}() noexcept;
+<@placeIndents quantity=indents/>        Aws::Crt::Optional<${memberTargetShape.getId().name}> Get${PascalCase}() const noexcept;
     <#else>
 <@placeIndents quantity=indents/>        ${memberDocMessage}
 <@placeIndents quantity=indents/>        void Set${PascalCase}(const ${context.getTypeName(memberShape)}& ${camelCase}) noexcept {
@@ -70,9 +70,9 @@
 <@placeIndents quantity=indents/>        }
 <@placeIndents quantity=indents/>        ${memberDocMessage}
 <#if convertedShape.hasTrait("error") && PascalCase == "Message">
-<@placeIndents quantity=indents/>        Aws::Crt::Optional<${context.getTypeName(memberShape)}> Get${PascalCase}() noexcept override {
+<@placeIndents quantity=indents/>        Aws::Crt::Optional<${context.getTypeName(memberShape)}> Get${PascalCase}() const noexcept override {
 <#else>
-<@placeIndents quantity=indents/>        Aws::Crt::Optional<${context.getTypeName(memberShape)}> Get${PascalCase}() noexcept {
+<@placeIndents quantity=indents/>        Aws::Crt::Optional<${context.getTypeName(memberShape)}> Get${PascalCase}() const noexcept {
 </#if>
     <#if shape.getDataShape().get().getType().name() == "UNION">
 <@placeIndents quantity=indents/>            if (m_chosenMember == TAG_${fn_to_constant_case.apply(camelCase)}) {
