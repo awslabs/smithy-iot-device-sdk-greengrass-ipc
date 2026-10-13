@@ -810,9 +810,11 @@ structure SubscribeToIoTCoreRequest {
     /// The topic to which to subscribe. Supports MQTT wildcards.
     @required
     topicName: String,
-    /// The MQTT QoS to use.
-    @required
+    /// The MQTT QoS to use for the cloud subscription. Required when subscriptionMode is SUBSCRIBE_AND_RECEIVE or not set - omitting it causes the request to fail.
+    /// Ignored when subscriptionMode is RECEIVE_ONLY (no cloud subscription is created).
     qos: QOS,
+    /// (Optional) Whether to create a cloud subscription, or only receive messages already delivered to the device. Defaults to SUBSCRIBE_AND_RECEIVE when not set.
+    subscriptionMode: SubscriptionMode
 }
 
 structure SubscribeToIoTCoreResponse {
@@ -1165,6 +1167,18 @@ string PayloadFormat
     }
 ])
 string ReceiveMode
+
+@enum([
+    {
+        value: "SUBSCRIBE_AND_RECEIVE",
+        name: "SUBSCRIBE_AND_RECEIVE"
+    },
+    {
+        value: "RECEIVE_ONLY",
+        name: "RECEIVE_ONLY"
+    }
+])
+string SubscriptionMode
 
 @enum([
     {
