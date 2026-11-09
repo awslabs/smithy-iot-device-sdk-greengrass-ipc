@@ -26,8 +26,12 @@ import software.amazon.smithy.model.traits.DeprecatedTrait;
 import software.amazon.smithy.model.traits.DocumentationTrait;
 import software.amazon.smithy.model.traits.EnumTrait;
 import software.amazon.smithy.model.traits.ErrorTrait;
+import software.amazon.smithy.model.traits.SensitiveTrait;
 import software.amazon.smithy.model.traits.StreamingTrait;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -38,6 +42,7 @@ import javax.lang.model.element.Modifier;
 public class StructureClassBuilder implements BiFunction<ClassName, StructureShape, JavaFile> {
     private static final Logger LOGGER = Logger.getLogger(StructureClassBuilder.class.getName());
     private static final String FIELD_NAME_VOID = "VOID";
+    private static final String SENSITIVE_PLACEHOLDER = "*** REDACTED ***";
 
     private final ServiceCodegenContext context;
 
@@ -253,7 +258,73 @@ public class StructureClassBuilder implements BiFunction<ClassName, StructureSha
         //add hash code method
         classBuilder.addMethod(buildModelHashCode(shape).build());
 
+        //Only generate a toString() when the shape has at least one sensitive member so that
+        //sensitive values are redacted. Structures with no sensitive members keep the default
+        //Object.toString() to avoid changing their generated output.
+        if (hasSensitiveMember(shape)) {
+            classBuilder.addMethod(buildModelToString(className, shape).build());
+        }
+
         return JavaFile.builder(className.packageName(), classBuilder.build()).build();
+    }
+
+    /**
+     * A member is treated as sensitive when the {@link SensitiveTrait} is applied to the member itself,
+     * to the shape the member targets, or to the enclosing structure.
+     */
+    private boolean isSensitiveMember(final StructureShape shape, final MemberShape memberShape) {
+        if (shape.hasTrait(SensitiveTrait.class) || memberShape.hasTrait(SensitiveTrait.class)) {
+            return true;
+        }
+        return context.getModel().getShape(memberShape.getTarget())
+                .map(target -> target.hasTrait(SensitiveTrait.class))
+                .orElse(false);
+    }
+
+    private boolean hasSensitiveMember(final StructureShape shape) {
+        return shape.getAllMembers().values().stream()
+                .filter(memberShape -> {
+                    final Shape memberTypeShape = context.getModel().getShape(memberShape.getTarget()).get();
+                    return !memberTypeShape.hasTrait(StreamingTrait.class);
+                })
+                .anyMatch(memberShape -> isSensitiveMember(shape, memberShape));
+    }
+
+    private MethodSpec.Builder buildModelToString(final ClassName className, final StructureShape shape) {
+        final MethodSpec.Builder toStringBuilder = MethodSpec.methodBuilder("toString")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.get(String.class));
+
+        final StringBuilder format = new StringBuilder();
+        final List<Object> args = new ArrayList<>();
+        format.append("$S");
+        args.add(className.simpleName() + "{");
+
+        boolean first = true;
+        for (final Map.Entry<String, MemberShape> memberEntry : shape.getAllMembers().entrySet()) {
+            final MemberShape memberShape = memberEntry.getValue();
+            final Shape memberTypeShape = context.getModel().getShape(memberShape.getTarget()).get();
+            if (memberTypeShape.hasTrait(StreamingTrait.class)) {
+                continue; //skip streaming members, consistent with equals/hashCode
+            }
+            final String memberName = memberEntry.getKey();
+            format.append(" + $S");
+            args.add((first ? "" : ", ") + memberName + "=");
+            first = false;
+            if (isSensitiveMember(shape, memberShape)) {
+                format.append(" + $S");
+                args.add(SENSITIVE_PLACEHOLDER);
+            } else {
+                format.append(" + $L");
+                args.add(memberName);
+            }
+        }
+        format.append(" + $S");
+        args.add("}");
+
+        toStringBuilder.addStatement("return " + format, args.toArray());
+        return toStringBuilder;
     }
 
     private MethodSpec.Builder buildModelHashCode(StructureShape shape) {

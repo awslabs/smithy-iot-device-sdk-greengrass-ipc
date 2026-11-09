@@ -121,11 +121,30 @@ class ${context.getTypeName(union)}(rpc.Shape):
         return '${union.getId()}'
 
 <#-- repr -->
+<#-- Members are sensitive when @sensitive is on the union, the member, or its target shape.
+     Their values are redacted from __repr__ so they don't leak into logs. -->
+<#assign sensitiveNames = []>
+<#list memberShapes as memberShape>
+    <#assign memberTargetShape = context.getShape(memberShape.getTarget())>
+    <#if union.hasTrait("sensitive") || memberShape.hasTrait("sensitive") || memberTargetShape.hasTrait("sensitive")>
+        <#assign sensitiveNames = sensitiveNames + [fn_camel_to_python.apply(memberShape.getMemberName())]>
+    </#if>
+</#list>
     def __repr__(self):
         attrs = []
+<#if sensitiveNames?has_content>
+        sensitive_attrs = {<#list sensitiveNames as name>'${name}'<#sep>, </#list>}
+        for attr, val in self.__dict__.items():
+            if val is not None:
+                if attr in sensitive_attrs:
+                    attrs.append('%s=*** REDACTED ***' % attr)
+                else:
+                    attrs.append('%s=%r' % (attr, val))
+<#else>
         for attr, val in self.__dict__.items():
             if val is not None:
                 attrs.append('%s=%r' % (attr, val))
+</#if>
         return '%s(%s)' % (self.__class__.__name__, ', '.join(attrs))
 
 <#-- eq -->

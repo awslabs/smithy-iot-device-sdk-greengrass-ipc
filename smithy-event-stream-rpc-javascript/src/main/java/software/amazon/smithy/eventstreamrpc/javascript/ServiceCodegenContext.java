@@ -136,6 +136,102 @@ public class ServiceCodegenContext {
         return null;
     }
 
+    /**
+     * A member is treated as sensitive when the {@link SensitiveTrait} is applied to the member itself,
+     * to the shape the member targets, or to the enclosing structure/union.
+     */
+    public boolean isSensitiveMember(Shape enclosingShape, MemberShape memberShape) {
+        if (enclosingShape.hasTrait(SensitiveTrait.class) || memberShape.hasTrait(SensitiveTrait.class)) {
+            return true;
+        }
+        return model.getShape(memberShape.getTarget())
+                .map(target -> target.hasTrait(SensitiveTrait.class))
+                .orElse(false);
+    }
+
+    public boolean hasSensitiveMembers(Shape shape) {
+        return shape.members().stream().anyMatch(memberShape -> isSensitiveMember(shape, memberShape));
+    }
+
+    public List<String> getSensitiveMemberNames(Shape shape) {
+        return shape.members().stream()
+                .filter(memberShape -> isSensitiveMember(shape, memberShape))
+                .map(MemberShape::getMemberName)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Detects members that target a list/set/map which (recursively) bottoms out in a sensitive
+     * <em>scalar</em> element. These require element-level redaction of the collection contents,
+     * as opposed to {@link #isSensitiveMember} which redacts the whole member value.
+     */
+    public boolean isSensitiveScalarCollectionMember(Shape enclosingShape, MemberShape memberShape) {
+        // Members handled by whole-value redaction are not element-level collection members.
+        if (isSensitiveMember(enclosingShape, memberShape)) {
+            return false;
+        }
+        return model.getShape(memberShape.getTarget())
+                .map(this::targetsSensitiveScalarLeaf)
+                .orElse(false);
+    }
+
+    /**
+     * Returns true when {@code shape} is a list/set/map whose element (or map value), unwrapped
+     * recursively through any nested list/set/map layers, is a sensitive scalar.
+     */
+    private boolean targetsSensitiveScalarLeaf(Shape shape) {
+        final MemberShape element;
+        if (shape.isListShape() || shape.isSetShape()) {
+            element = ((CollectionShape) shape).getMember();
+        } else if (shape.isMapShape()) {
+            element = shape.asMapShape().get().getValue();
+        } else {
+            return false;
+        }
+
+        final Optional<Shape> elementTarget = model.getShape(element.getTarget());
+        if (!elementTarget.isPresent()) {
+            return false;
+        }
+
+        final Shape target = elementTarget.get();
+        if (target.isListShape() || target.isSetShape() || target.isMapShape()) {
+            return targetsSensitiveScalarLeaf(target); // recurse into nested collections
+        }
+
+        final boolean sensitive = element.hasTrait(SensitiveTrait.class) || target.hasTrait(SensitiveTrait.class);
+        return sensitive && isScalarShape(target);
+    }
+
+    /**
+     * A scalar is any shape that is not a structure, union, or collection. These are the leaf value
+     * types that cannot carry their own redaction hook and so must be redacted in place.
+     */
+    private boolean isScalarShape(Shape shape) {
+        switch (shape.getType()) {
+            case STRUCTURE:
+            case UNION:
+            case LIST:
+            case SET:
+            case MAP:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public boolean hasSensitiveScalarCollectionMembers(Shape shape) {
+        return shape.members().stream()
+                .anyMatch(memberShape -> isSensitiveScalarCollectionMember(shape, memberShape));
+    }
+
+    public List<String> getSensitiveScalarCollectionMemberNames(Shape shape) {
+        return shape.members().stream()
+                .filter(memberShape -> isSensitiveScalarCollectionMember(shape, memberShape))
+                .map(MemberShape::getMemberName)
+                .collect(Collectors.toList());
+    }
+
     public static String getOperationResponseSuffix() {
         return "Response";
     }

@@ -360,6 +360,7 @@ structure GetClientDeviceAuthTokenRequest {
      /// The username. (unused).
      username: String,
      /// The password. (unused).
+     @sensitive
      password: String
  }
 
@@ -900,6 +901,7 @@ structure CreateDebugPasswordRequest {
 
 structure CreateDebugPasswordResponse {
     @required
+    @sensitive
     password: String,
     @required
     username: String,
