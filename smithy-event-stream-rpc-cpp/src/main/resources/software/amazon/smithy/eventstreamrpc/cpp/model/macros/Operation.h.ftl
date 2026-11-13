@@ -64,7 +64,7 @@ class ${export} ${OperationPascalCaseName}StreamHandler : public StreamResponseH
 <@placeIndents quantity=indents/>    ${OperationPascalCaseName}Result(EventstreamResultVariantType&& result) noexcept : m_result(std::move(result)) {}
 <@placeIndents quantity=indents/>    ${context.getResponseClassName(operation)} *GetOperationResponse() const noexcept
 <@placeIndents quantity=indents/>    {
-<@placeIndents quantity=indents/>        return static_cast<${context.getResponseClassName(operation)} *>(std::get<Aws::Crt::ScopedResource<AbstractShapeBase>>(m_result).get());
+<@placeIndents quantity=indents/>        return static_cast<${context.getResponseClassName(operation)} *>(m_result.GetModeledResponse());
 <@placeIndents quantity=indents/>    }
 
 <@placeIndents quantity=indents/>    /**
@@ -72,9 +72,9 @@ class ${export} ${OperationPascalCaseName}StreamHandler : public StreamResponseH
 <@placeIndents quantity=indents/>      * false if the response is associated with an error.
 <@placeIndents quantity=indents/>      */
 <@placeIndents quantity=indents/>    operator bool() const noexcept { return GetResultType() == OPERATION_RESPONSE; }
-<@placeIndents quantity=indents/>    OperationError *GetOperationError() const noexcept { return std::get<Aws::Crt::ScopedResource<OperationError>>(m_result).get(); }
-<@placeIndents quantity=indents/>    RpcError GetRpcError() const noexcept { return std::get<RpcError>(m_result); }
-<@placeIndents quantity=indents/>    ResultType GetResultType() const noexcept { return ResultVariantToResultType(m_result); }
+<@placeIndents quantity=indents/>    OperationError *GetOperationError() const noexcept { return m_result.GetModeledError(); }
+<@placeIndents quantity=indents/>    RpcError GetRpcError() const noexcept { return m_result.GetRpcError(); }
+<@placeIndents quantity=indents/>    ResultType GetResultType() const noexcept { return m_result.GetType(); }
 <@placeIndents quantity=indents/>  private:
 <@placeIndents quantity=indents/>    EventstreamResultVariantType m_result;
 <@placeIndents quantity=indents/>};
